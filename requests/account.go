@@ -48,8 +48,8 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(8, username, password) {
-		tools.JsonResponse(w, 400, `{"message": "Username or password too short"}`)
+	if tools.ValueTooShort(8, username, password) || tools.ValueTooShort(4, firstName, lastName) {
+		tools.JsonResponse(w, 400, `{"message": "Username, password, first name or last name too short"}`)
 		return
 	}
 
@@ -192,9 +192,18 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	creationDate := tools.BodyValueToString(body, "creation_date")
 
 	// Checking if the values are empty
-	if tools.AtLeastOneValueNotEmpty(username, password, firstName, lastName, email, accountType, creationDate) || tools.ValueIsEmpty(id) {
-		tools.JsonResponse(w, 400, `{"message": "Empty fields or incorrect values length"}`)
+	if tools.ValueIsEmpty(id) {
+		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 		return
+	}
+
+	// for each key in the body, if the key is not in the query, return an error
+	for key, _ := range body {
+		// if the key is empty
+		if tools.ValueIsEmpty(tools.BodyValueToString(body, key)) {
+			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+			return
+		}
 	}
 
 	// Checking if the values are too short or too long
@@ -211,6 +220,11 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if tools.ValueTooLong(64, email) {
 		tools.JsonResponse(w, 400, `{"message": "Email too long"}`)
+		return
+	}
+
+	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
+		tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
 		return
 	}
 

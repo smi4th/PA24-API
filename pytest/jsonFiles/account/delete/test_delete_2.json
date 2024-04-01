@@ -1,0 +1,13 @@
+{
+    "request": {
+        "urlParams": {
+            "id": "1"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Account does not exist"
+        }
+    }
+}

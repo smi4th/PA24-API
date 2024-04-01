@@ -10,11 +10,6 @@
     "logs": {
         "path": "logs.log",
         "level": [
-            "info",
-            "error",
-            "request",
-            "response",
-            "sql"
         ]
     }
 }

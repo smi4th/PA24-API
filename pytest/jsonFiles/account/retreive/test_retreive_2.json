@@ -1,0 +1,11 @@
+{
+    "request": {
+        "urlParams": {
+            "username": "username"
+        }
+    },
+    "response": {
+        "status_code": 200,
+        "body": "[{\"id\": \"UNPREDEFINED\",\"username\": \"username\",\"first_name\": \"firstName\",\"last_name\": \"lastName\",\"email\": \"test@test.com\",\"account_type\": \"UNPREDEFINED\",\"creation_date\": \"2024-04-02\"}]"
+    }
+}

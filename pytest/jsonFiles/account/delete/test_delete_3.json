@@ -1,0 +1,14 @@
+{
+    "request": {
+        "urlParams": {
+            "id": "1"
+        }
+    },
+    "response": {
+        "status_code": 200,
+        "body": {
+            "message": "Account deleted",
+            "id": "UNPREDEFINED"
+        }
+    }
+}
