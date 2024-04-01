@@ -1,10 +1,25 @@
 # PA24-API
 
 ## Description
-\<Description needed>
+L’API du projet ParisCareTackerServices a été réalisé en utilisant le langage Go.
 
-## Gestion des flux
+### Options des calls API
+It is possible to add the option in the URL `_return_fields` followed by the fields wanted.
+For example, when creating a user you can add to your request `_return_fields=username,id,creation_date` and thoses 3 values shall be returned in the response.
 
+## Credentials
+The API uses a classic Bearer Token system. To obtain one, simply send an `POST` API request to __`{{URI}}/api/login`__ with the following parameters in the request body:
+
+```JSON
+{
+  "identifier": "<Identifier>",
+  "password": "<password>"
+}
+```
+
+The request will then return the Bearer token, which must be provided for all future requests.
+
+## Flow management
 ```mermaid
 
 sequenceDiagram
@@ -58,7 +73,6 @@ sequenceDiagram
 ```
 
 ## Installation
-
 To install the API on the disired server you need to run theses commands.
 
 There is a `installation.sh` file that contains bash code to install and launch the API server with default configuration.
@@ -69,7 +83,6 @@ sudo bash PA24-API/installation.sh
 ```
 
 ## Configuration
-
 You can find a `config.json` file. It contains some informations that you can modify to your liking. Like the databse location, the database credentials...
 
 The database credentials **must** be stored in a secure way to ensure security breach.

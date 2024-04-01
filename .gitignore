@@ -1,0 +1,9 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+
+# credentials
+*.env
+
+# Logs
+logs/*
