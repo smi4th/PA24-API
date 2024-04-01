@@ -12,12 +12,16 @@ func main() {
 	db := tools.InitDatabaseConnection()
 	defer tools.CloseDatabaseConnection(db)
 
-	http.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-		tools.JsonResponse(w, 200, `{"message": "Hello, API!"}`)
-	})
-
-	http.HandleFunc("/api/account", func(w http.ResponseWriter, r *http.Request) {
-		requests.Account(w, r)
+	// Handle the requests
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/account":
+			requests.Account(w, r, db)
+		case "/api/account_type":
+			requests.AccountType(w, r, db)
+		default:
+			tools.JsonResponse(w, 404, `{"message": "Not found"}`)
+		}
 	})
 
 	tools.InfoLog("Server is running on port 80")

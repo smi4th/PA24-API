@@ -11,6 +11,7 @@ import (
 	"strings"
 	"fmt"
 	"unicode"
+	"crypto/rand"
 	
 	"golang.org/x/crypto/bcrypt"
 	_ "github.com/go-sql-driver/mysql"
@@ -78,6 +79,22 @@ func RequestLog(r *http.Request, body map[string]interface{}) {
 	}
 }
 
+func SQLLog(query string) {
+	if configMap == nil {
+		getConfig()
+	}
+	// if the log level contains "sql"
+	if strings.Contains(configMap["logs"]["level"], "sql") {
+		log("\033[35m", "[SQL] " + query)
+	}
+}
+
+/*
+#######################################
+########## Config Functions ###########
+#######################################
+*/
+
 type configJson struct {
 	Database struct {
 		Host     string `json:"host"`
@@ -94,12 +111,6 @@ type configJson struct {
 }
 
 var configMap map[string]map[string]string
-
-/*
-#######################################
-########## Config Functions ###########
-#######################################
-*/
 
 func getConfig() map[string]map[string]string {
 	jsonFile, err := os.Open("config.json")
@@ -166,10 +177,18 @@ func ReadBody(r *http.Request) map[string]interface{} {
 	return jsonMap
 }
 
+func ReadQuery(r *http.Request) map[string]string {
+	query := r.URL.Query()
+	queryMap := make(map[string]string)
+	for key, value := range query {
+		queryMap[key] = value[0]
+	}
+	return queryMap
+}
+
 func BodyValueToString(body map[string]interface{}, key string) string {
 	value, ok := body[key].(string)
 	if !ok {
-		ErrorLog("Value is not a string")
 		return ""
 	}
 	return value
@@ -178,7 +197,6 @@ func BodyValueToString(body map[string]interface{}, key string) string {
 func BodyValueToInt(body map[string]interface{}, key string) int {
 	value, ok := body[key].(float64)
 	if !ok {
-		ErrorLog("Value is not an integer")
 		return 0
 	}
 	return int(value)
@@ -187,7 +205,6 @@ func BodyValueToInt(body map[string]interface{}, key string) int {
 func BodyValueToFloat(body map[string]interface{}, key string) float64 {
 	value, ok := body[key].(float64)
 	if !ok {
-		ErrorLog("Value is not a float")
 		return 0
 	}
 	return value
@@ -196,7 +213,6 @@ func BodyValueToFloat(body map[string]interface{}, key string) float64 {
 func BodyValueToBool(body map[string]interface{}, key string) bool {
 	value, ok := body[key].(bool)
 	if !ok {
-		ErrorLog("Value is not a boolean")
 		return false
 	}
 	return value
@@ -205,7 +221,6 @@ func BodyValueToBool(body map[string]interface{}, key string) bool {
 func BodyValueToMap(body map[string]interface{}, key string) map[string]interface{} {
 	value, ok := body[key].(map[string]interface{})
 	if !ok {
-		ErrorLog("Value is not a map")
 		return nil
 	}
 	return value
@@ -214,7 +229,6 @@ func BodyValueToMap(body map[string]interface{}, key string) map[string]interfac
 func BodyValueToArray(body map[string]interface{}, key string) []interface{} {
 	value, ok := body[key].([]interface{})
 	if !ok {
-		ErrorLog("Value is not an array")
 		return nil
 	}
 	return value
@@ -253,36 +267,36 @@ func CloseDatabaseConnection(db *sql.DB) {
 	InfoLog("Connection with database is closed")
 }
 
-func ExecuteQuery(db *sql.DB, query string, args ...interface{}) *sql.Rows {
-	InfoLog("Preparing query: " + query)
+func ExecuteQuery(db *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
+	SQLLog("Preparing query: " + query)
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		ErrorLog(err.Error())
-		return nil
+		return nil, err
 	}
 	defer stmt.Close()
 
 	if len(args) == 0 {
-		InfoLog("Executing query without arguments")
+		SQLLog("Executing query without arguments")
 		rows, err := stmt.Query()
 		if err != nil {
 			ErrorLog(err.Error())
-			return nil
+			return nil, err
 		}
-		return rows
+		return rows, nil
 	}
 
-	InfoLog("Executing query with arguments ")
+	SQLLog("Executing query with arguments ")
 	for i, arg := range args {
-		InfoLog("Arg " + strconv.Itoa(i) + ": " + arg.(string))
+		SQLLog("Arg " + strconv.Itoa(i) + ": " + arg.(string))
 	}
 	rows, err := stmt.Query(args...)
 	if err != nil {
 		ErrorLog(err.Error())
-		return nil
+		return nil, err
 	}
 
-	return rows
+	return rows, nil
 }
 
 func RowsToJson(rows *sql.Rows) string {
@@ -352,6 +366,18 @@ func RowsToJson(rows *sql.Rows) string {
 #######################################
 */
 
+func GenerateUUID() string {
+	uuid := make([]byte, 16)
+	_, err := rand.Read(uuid)
+	if err != nil {
+		ErrorLog(err.Error())
+		return ""
+	}
+	uuid[8] = uuid[8]&^0xc0 | 0x80
+	uuid[6] = uuid[6]&^0xf0 | 0x40
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:])
+}
+
 func HashPassword(password string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -379,6 +405,42 @@ func ValuesNotInBody(body map[string]interface{}, keys ...string) bool {
 	return false
 }
 
+func ValuesNotInQuery(query map[string]string, keys ...string) bool {
+	for _, key := range keys {
+		if query[key] == "" {
+			return true
+		}
+	}
+	return false
+}
+
+func AtLeastOneValueInQuery(query map[string]string, keys ...string) bool {
+	for _, key := range keys {
+		if query[key] != "" {
+			return false
+		}
+	}
+	return true
+}
+
+func AtLeastOneValueInBody(body map[string]interface{}, keys ...string) bool {
+	for _, key := range keys {
+		if _, ok := body[key]; ok {
+			return false
+		}
+	}
+	return true
+}
+
+func AtLeastOneValueNotEmpty(values ...string) bool {
+	for _, value := range values {
+		if value != "" {
+			return false
+		}
+	}
+	return true
+}
+
 func ValueIsEmpty(values ...string) bool {
 	for _, value := range values {
 		if value == "" {
@@ -390,7 +452,7 @@ func ValueIsEmpty(values ...string) bool {
 
 func ValueTooShort(length int, values ...string) bool {
 	for _, value := range values {
-		if len(value) < length {
+		if len(value) < length && value != "" {
 			return true
 		}
 	}
@@ -430,14 +492,85 @@ func PasswordNotStrong(password string) bool {
     return !(!ValueTooShort(8, password) && hasUpper && hasLower && hasNumber && hasSpecial)
 }
 
-/*
-#######################################
-########## Request functions ##########
-#######################################
-*/
+func ElementExists(db *sql.DB, table string, attribute string, value string) bool {
+	// Execute the query to count occurrences of the value in the specified table and attribute.
+	result, err := ExecuteQuery(db , "SELECT COUNT(`" + attribute + "`) as `count` FROM `" + table + "` WHERE `" + attribute + "` = ?", value)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	defer result.Close()
 
-func GetReturnFields(r *http.Request) []string {
-	// _return_fields is a comma separated list of fields
-	fields := strings.Split(r.URL.Query().Get("_return_fields"), ",")
-	return fields
+	// Check if the `count` is greater than 0.
+	if result.Next() {
+		var count int
+		err := result.Scan(&count)
+		if err != nil {
+			ErrorLog(err.Error())
+			return false
+		}
+		return count > 0
+	}
+
+	return false
+}
+
+func EmailIsValid(email string) bool {
+	// Check if the email contains an @.
+	if !strings.Contains(email, "@") {
+		return false
+	}
+	// Check if the email contains a dot.
+	if !strings.Contains(email, ".") {
+		return false
+	}
+	// Check if the email is not too short.
+	if len(email) < 5 {
+		return false
+	}
+	// Check if the email is not too long.
+	if len(email) > 64 {
+		return false
+	}
+	return true
+}
+
+// appendLikeCondition appends a 'LIKE' condition to the SQL query if the provided value is non-empty.
+// It updates both the SQL query and the parameters slice accordingly.
+func AppendLikeCondition(request *string, params *[]interface{}, field, value string) {
+    if value != "" {
+        // Append the 'LIKE' condition to the SQL query and add the parameter to the slice.
+        *request += " " + field + " LIKE ? OR"
+        *params = append(*params, "%"+value+"%")
+    }
+}
+
+// appendCondition appends a condition to the SQL query if the provided value is non-empty or if it's a non-strict search.
+// It updates both the SQL query and the parameters slice accordingly.
+func AppendCondition(request *string, params *[]interface{}, field, value string, strictSearch bool) {
+    if value != "" && field != "strictSearch" {
+        // Determine the logical operator based on strict or non-strict search.
+        operator := "OR"
+        if strictSearch {
+            operator = "AND"
+        }
+
+        // Additional condition for 'start_date' and 'end_date'.
+        if field == "start_date" { 
+            *request += " " + field + "<=? " + operator
+        } else if field == "end_date" {
+            *request += " " + field + ">=? " + operator
+        } else {
+            *request += " " + field + "=? " + operator
+        }
+
+        // Append the parameter to the slice.
+        *params = append(*params, value)
+    }
+}
+
+func AppendUpdate(request *string, params *[]interface{}, key string, value interface{}) {
+	// Append the key and value to the SQL query and add the parameter to the slice.
+	*request += "`" + key + "` = ?, "
+	*params = append(*params, value)
 }
