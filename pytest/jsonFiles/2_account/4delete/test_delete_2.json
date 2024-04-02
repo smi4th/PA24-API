@@ -1,0 +1,16 @@
+{
+    "request": {
+        "url": "account",
+        "urlParams": {
+            "id": "INVALID"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Account does not exist"
+        }
+    }
+}

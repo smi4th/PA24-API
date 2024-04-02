@@ -1,0 +1,14 @@
+{
+    "request": {
+        "url": "account_type",
+        "urlParams" : {
+            "type": "INJECT"
+        },
+        "method": "GET",
+        "body": {}
+    },
+    "response": {
+        "status_code": 200,
+        "body": "[{\"id\": \"UNPREDEFINED\",\"type\": \"INJECT\"}]"
+    }
+}

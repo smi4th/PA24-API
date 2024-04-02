@@ -1,0 +1,20 @@
+{
+    "request": {
+        "url": "account",
+        "urlParams": {
+            "id": "INJECT"
+        },
+        "method": "PUT",
+        "body": {
+            "password": "P@ssw0rd",
+            "first_name": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec odio. Donec elementum, ligula vel vulputate euismod, ligula leo egestas lectus, suscipit vel quam.",
+            "last_name": "lastName"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "values too long"
+        }
+    }
+}

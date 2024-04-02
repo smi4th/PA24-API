@@ -1,0 +1,17 @@
+{
+    "request": {
+        "url": "account_type",
+        "urlParams" : {
+            "id": "INJECT"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 200,
+        "body": {
+            "message": "Account type deleted",
+            "id": "UNPREDEFINED"
+        }
+    }
+}
