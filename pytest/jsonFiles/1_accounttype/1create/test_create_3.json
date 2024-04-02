@@ -1,0 +1,16 @@
+{
+    "request": {
+        "url": "account_type",
+        "urlParams" : {},
+        "method": "POST",
+        "body": {
+            "type": "a"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Type too short"
+        }
+    }
+}

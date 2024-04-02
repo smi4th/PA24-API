@@ -1,0 +1,16 @@
+{
+    "request": {
+        "url": "account_type",
+        "urlParams" : {
+            "id": "1"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Account type does not exist"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "request": {
+        "url": "account",
+        "urlParams": {
+            "id": "INJECT"
+        },
+        "method": "PUT",
+        "body": {
+            "username": "",
+            "password": "",
+            "first_name": "firstName",
+            "last_name": "lastName"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Empty fields"
+        }
+    }
+}
