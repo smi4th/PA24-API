@@ -1,0 +1,15 @@
+{
+    "request": {
+        "body": {
+            "type": "RANDOMIZED"
+        }
+    },
+    "response": {
+        "status_code": 200,
+        "body": {
+            "message": "Account type updated",
+            "id": "INJECT",
+            "type": "INJECT"
+        }
+    }
+}

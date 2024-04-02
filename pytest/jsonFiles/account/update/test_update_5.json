@@ -1,11 +1,7 @@
 {
     "request": {
         "body": {
-            "username": "username",
-            "password": "P@ssw0rd",
             "first_name": "firstName",
-            "last_name": "lastName",
-            "email": "test@test.com",
             "account_type": "invalid"
         }
     },

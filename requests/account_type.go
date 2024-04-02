@@ -162,19 +162,25 @@ func AccountTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Checking if the values are too short or too long
 	if tools.ValueTooShort(4, type_) {
-		tools.JsonResponse(w, 400, `{"message": "ID and type too short"}`)
+		tools.JsonResponse(w, 400, `{"message": "type too short"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
 	if tools.ValueTooLong(32, type_) {
-		tools.JsonResponse(w, 400, `{"message": "ID and type too long"}`)
+		tools.JsonResponse(w, 400, `{"message": "type too long"}`)
 		return
 	}
 
 	// Checking if the account exists
 	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", id) {
 		tools.JsonResponse(w, 400, `{"message": "Account type does not exist"}`)
+		return
+	}
+
+	// Checking if the account type is valid
+	if tools.ElementExists(db, "ACCOUNT_TYPE", "type", type_) {
+		tools.JsonResponse(w, 400, `{"message": "Account type already exists"}`)
 		return
 	}
 
@@ -219,12 +225,6 @@ func AccountTypeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	id := query["id"]
-
-	// Checking if the values are empty
-	if tools.ValueIsEmpty(id) {
-		tools.JsonResponse(w, 400, `{"message": "ID cannot be empty"}`)
-		return
-	}
 
 	// Checking if the account exists
 	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", id) {
@@ -274,6 +274,7 @@ func AccountTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, e
 			}
 			jsonResponse += `{"id": "` + id + `", "type": "` + type_ + `"},`
 		}
+		jsonResponse = jsonResponse[:len(jsonResponse)-1]
 		jsonResponse += `]`
 		return jsonResponse, nil
 	default:

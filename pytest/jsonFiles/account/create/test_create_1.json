@@ -1,11 +1,11 @@
 {
     "request": {
         "body": {
-            "username": "username",
+            "username": "RANDOMIZED",
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "test@test.com",
+            "email": "RANDOMIZED",
             "account_type": "INVALID TYPË"
         }
     },

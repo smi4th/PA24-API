@@ -1,12 +1,12 @@
 {
     "request": {
         "body": {
-            "username": "username",
+            "username": "INJECT",
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "test@test.com",
-            "account_type": "093f191a-e2b7-4bb1-b104-248468a12eb7"
+            "email": "RANDOMIZED",
+            "account_type": "UNPREDEFINED"
         }
     },
     "response": {

@@ -1,6 +1,6 @@
 {
     "request": {
-        "urlParams": {}
+        "body": {}
     },
     "response": {
         "status_code": 400,

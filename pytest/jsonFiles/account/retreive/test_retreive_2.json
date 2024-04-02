@@ -1,11 +1,11 @@
 {
     "request": {
-        "urlParams": {
-            "username": "username"
+        "body": {
+            "username": "INJECT"
         }
     },
     "response": {
         "status_code": 200,
-        "body": "[{\"id\": \"UNPREDEFINED\",\"username\": \"username\",\"first_name\": \"firstName\",\"last_name\": \"lastName\",\"email\": \"test@test.com\",\"account_type\": \"UNPREDEFINED\",\"creation_date\": \"2024-04-02\"}]"
+        "body": "[{\"id\": \"INJECT\",\"username\": \"INJECT\",\"first_name\": \"firstName\",\"last_name\": \"lastName\",\"email\": \"INJECT\",\"account_type\": \"INJECT\",\"creation_date\": \"INJECT\"}]"
     }
 }

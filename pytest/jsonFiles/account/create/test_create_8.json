@@ -1,12 +1,12 @@
 {
     "request": {
         "body": {
-            "username": "username",
+            "username": "RANDOMIZED",
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "test@test.com",
-            "account_type": "093f191a-e2b7-4bb1-b104-248468a12eb7"
+            "email": "RANDOMIZED",
+            "account_type": "UNPREDEFINED"
         }
     },
     "response": {
@@ -14,10 +14,10 @@
         "body": {
             "message": "Account created",
             "id": "UNPREDEFINED",
-            "username": "UNPREDEFINED",
+            "username": "INJECT",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "test@test.com",
+            "email": "INJECT",
             "account_type": "UNPREDEFINED",
             "creation_date": "UNPREDEFINED"
         }
