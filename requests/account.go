@@ -223,9 +223,11 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
-		tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
-		return
+	if (!tools.ValueIsEmpty(accountType)) {
+		if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
+			tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
+			return
+		}
 	}
 
 	// Checking if the account exists

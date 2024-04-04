@@ -1,0 +1,25 @@
+{
+    "request": {
+        "url": "account",
+        "urlParams": {
+            "id": "INJECT"
+        },
+        "method": "PUT",
+        "body": {
+            "first_name": "RANDOMIZED"
+        }
+    },
+    "response": {
+        "status_code": 200,
+        "body": {
+            "message": "Account updated",
+            "id": "INJECT",
+            "username": "INJECT",
+            "first_name": "INJECT",
+            "last_name": "INJECT",
+            "email": "INJECT",
+            "account_type": "INJECT",
+            "creation_date": "INJECT"
+        }
+    }
+}

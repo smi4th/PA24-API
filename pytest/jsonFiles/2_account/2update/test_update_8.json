@@ -2,15 +2,17 @@
     "request": {
         "url": "account",
         "urlParams": {
-            "id": ""
+            "id": "INJECT"
         },
-        "method": "DELETE",
-        "body": {}
+        "method": "PUT",
+        "body": {
+            "password": "password"
+        }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Missing fields"
+            "message": "Password not strong enough"
         }
     }
 }

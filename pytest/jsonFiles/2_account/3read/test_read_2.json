@@ -9,6 +9,6 @@
     },
     "response": {
         "status_code": 200,
-        "body": "[{\"id\": \"INJECT\",\"username\": \"INJECT\",\"first_name\": \"firstName\",\"last_name\": \"lastName\",\"email\": \"INJECT\",\"account_type\": \"INJECT\",\"creation_date\": \"INJECT\"}]"
+        "body": "[{\"id\": \"INJECT\",\"username\": \"INJECT\",\"first_name\": \"INJECT\",\"last_name\": \"INJECT\",\"email\": \"INJECT\",\"account_type\": \"INJECT\",\"creation_date\": \"INJECT\"}]"
     }
 }

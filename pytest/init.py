@@ -15,7 +15,7 @@ for key, value in files.items():
     path = ''
 
     if "delete" in key:
-        path = f"{ROOT.split("/")[0]}/pyTestsCleanup/test_{list(files).index(list(files)[-int(key.split('/')[0].split("_")[0])])}_{key.split("/")[0].split("_")[1]}_{value[0].split('_')[1]}.py"
+        path = f"{ROOT.split('/')[0]}/pyTestsCleanup/test_{list(files).index(list(files)[-int(key.split('/')[0].split('_')[0])])}_{key.split('/')[0].split('_')[1]}_{value[0].split('_')[1]}.py"
     else:
         path = f"{ROOT}/{key.split('/')[0]}/test_{key.split('/')[0].split('_')[1]}_{key.split('/')[1]}.py"
 
@@ -33,3 +33,7 @@ for key, value in files.items():
                 modelModified = modelModified.replace("JSONPATH", f'"/pytest/jsonFiles/{key}/{v}"')
                 f.write(modelModified)
                 f.write("\n\n")
+                
+with open(f"{ROOT.split('/')[0]}/pyTestsCleanup/test_removeTemp.py", "w") as f:
+    f.write("def test_removeTemp(): import os; os.remove('pytest/temp.json'); assert True")
+    # f.write("assert True")
