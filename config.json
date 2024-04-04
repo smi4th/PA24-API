@@ -2,18 +2,15 @@
     "database": {
         "host": "localhost",
         "port": "3306",
-        "username": "TUNNEL",
-        "password": "PASSWORD",
+        "username": "root",
+        "password": "",
         "database": "database"
     },
     
     "logs": {
         "path": "logs.log",
         "level": [
-            "info",
-            "error",
-            "request",
-            "response"
+            "error"
         ]
     }
 }

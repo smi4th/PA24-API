@@ -8,14 +8,14 @@
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "LOREMIPSUMDOLORSITAMETCONSECTETURADIPISICINGELITSEDDOEIUSMODTEMPORINCIDIDUNTUTLABOREETDOLOREMAGNAALI@a.com",
-            "account_type": "UNPREDEFINED"
+            "email": "RANDOMIZED",
+            "account_type": "INVALID TYPË"
         }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Email too long"
+            "message": "Invalid account type"
         }
     }
 }

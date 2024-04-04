@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "provider",
+        "urlParams": {},
+        "method": "POST",
+        "body": {
+            "name": "RANDOMIZED"
+        }
+    },
+    "response": {
+        "status_code": 201,
+        "body": {
+            "message": "Provider created",
+            "id": "UNPREDEFINED",
+            "name": "INJECT"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "provider",
+        "urlParams": {
+            "id": "INJECT"
+        },
+        "method": "PUT",
+        "body": {
+            "name": "LOREMIPSUMDOLORSITAMETCONSECTETURADIPISICINGELITSEDDOEIUSMODTEMPORINCIDIDUNTUTLABOREETDOLOREMAGNAALI"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Values too long"
+        }
+    }
+}

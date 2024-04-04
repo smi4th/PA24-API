@@ -4,14 +4,15 @@
         "urlParams": {
             "id": "INJECT"
         },
-        "method": "DELETE",
-        "body": {}
+        "method": "PUT",
+        "body": {
+            "username": "INJECT"
+        }
     },
     "response": {
-        "status_code": 200,
+        "status_code": 400,
         "body": {
-            "message": "Account deleted",
-            "id": "INJECT"
+            "message": "Username already taken"
         }
     }
 }

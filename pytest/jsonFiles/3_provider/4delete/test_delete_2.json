@@ -1,17 +1,16 @@
 {
     "request": {
-        "url": "account",
+        "url": "provider",
         "urlParams": {
-            "id": "INJECT"
+            "id": "INVALID"
         },
         "method": "DELETE",
         "body": {}
     },
     "response": {
-        "status_code": 200,
+        "status_code": 400,
         "body": {
-            "message": "Account deleted",
-            "id": "INJECT"
+            "message": "Provider does not exist"
         }
     }
 }

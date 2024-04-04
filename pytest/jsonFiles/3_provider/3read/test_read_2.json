@@ -1,17 +1,14 @@
 {
     "request": {
-        "url": "account",
+        "url": "provider",
         "urlParams": {
             "id": "INJECT"
         },
-        "method": "DELETE",
+        "method": "GET",
         "body": {}
     },
     "response": {
         "status_code": 200,
-        "body": {
-            "message": "Account deleted",
-            "id": "INJECT"
-        }
+        "body": "[{\"id\": \"INJECT\",\"name\": \"INJECT\"}]"
     }
 }
