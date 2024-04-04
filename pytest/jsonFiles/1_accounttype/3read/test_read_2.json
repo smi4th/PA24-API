@@ -9,6 +9,6 @@
     },
     "response": {
         "status_code": 200,
-        "body": "[{\"id\": \"UNPREDEFINED\",\"type\": \"INJECT\"}]"
+        "body": "[{\"id\": \"INJECT\",\"type\": \"INJECT\"}]"
     }
 }

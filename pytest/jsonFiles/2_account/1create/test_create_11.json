@@ -4,18 +4,18 @@
         "urlParams": {},
         "method": "POST",
         "body": {
-            "username": "RANDOMIZED",
+            "username": "INJECT",
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "INJECT",
+            "email": "RANDOMIZED",
             "account_type": "INJECT_FOREIGN:accounttype_id"
         }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Email already taken"
+            "message": "Username already taken"
         }
     }
 }

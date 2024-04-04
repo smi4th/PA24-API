@@ -59,6 +59,12 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	// Checking if the account type is valid
+	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
+		tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
+		return
+	}
+
 	if tools.ValueTooLong(64, email) {
 		tools.JsonResponse(w, 400, `{"message": "Email too long"}`)
 		return
@@ -76,21 +82,15 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	
-	// Checking if the username is already taken
-	if tools.ElementExists(db, "ACCOUNT", "username", username) {
-		tools.JsonResponse(w, 400, `{"message": "Username already taken"}`)
-		return
-	}
-
 	// Checking if the email is already taken
 	if tools.ElementExists(db, "ACCOUNT", "email", email) {
 		tools.JsonResponse(w, 400, `{"message": "Email already taken"}`)
 		return
 	}
 
-	// Checking if the account type is valid
-	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
-		tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
+	// Checking if the username is already taken
+	if tools.ElementExists(db, "ACCOUNT", "username", username) {
+		tools.JsonResponse(w, 400, `{"message": "Username already taken"}`)
 		return
 	}
 
@@ -236,16 +236,31 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.ValueIsEmpty(password) {	
+		if tools.PasswordNotStrong(password) {
+			tools.JsonResponse(w, 400, `{"message": "Password not strong enough"}`)
+			return
+		}
+	}
+
+	// Checking if the email is already taken
+	if tools.ElementExists(db, "ACCOUNT", "email", email) {
+		tools.JsonResponse(w, 400, `{"message": "Email already taken"}`)
+		return
+	}
+
+	// Checking if the username is already taken
+	if tools.ElementExists(db, "ACCOUNT", "username", username) {
+		tools.JsonResponse(w, 400, `{"message": "Username already taken"}`)
+		return
+	}
+
 	request := "UPDATE `ACCOUNT` SET "
 	var params []interface{}
 	
 	for key, value := range body {
 		if key != "id" {
 			if key == "password" {
-				if tools.PasswordNotStrong(value.(string)) {
-					tools.JsonResponse(w, 400, `{"message": "Password not strong enough"}`)
-					return
-				}
 				value = tools.HashPassword(value.(string))
 			}
 			tools.AppendUpdate(&request, &params, key, value)
@@ -345,6 +360,7 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 			}
 			jsonResponse += `{"id": "` + id + `", "username": "` + username + `", "first_name": "` + firstName + `", "last_name": "` + lastName + `", "email": "` + email + `", "account_type": "` + accountType + `", "creation_date": "` + creation_date + `"},`
 		}
+		jsonResponse = jsonResponse[:len(jsonResponse)-1]
 		jsonResponse += `]`
 		return jsonResponse, nil
 	default:

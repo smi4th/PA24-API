@@ -1,8 +1,8 @@
 {
     "request": {
-        "url": "account",
+        "url": "provider",
         "urlParams": {},
-        "method": "POST",
+        "method": "PUT",
         "body": {}
     },
     "response": {

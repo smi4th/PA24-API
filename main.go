@@ -19,6 +19,8 @@ func main() {
 			requests.Account(w, r, db)
 		case "/api/account_type":
 			requests.AccountType(w, r, db)
+		case "/api/provider":
+			requests.Provider(w, r, db)
 		default:
 			tools.JsonResponse(w, 404, `{"message": "Not found"}`)
 		}

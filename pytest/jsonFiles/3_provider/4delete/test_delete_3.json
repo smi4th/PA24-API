@@ -1,6 +1,6 @@
 {
     "request": {
-        "url": "account",
+        "url": "provider",
         "urlParams": {
             "id": "INJECT"
         },
@@ -10,7 +10,7 @@
     "response": {
         "status_code": 200,
         "body": {
-            "message": "Account deleted",
+            "message": "Provider deleted",
             "id": "INJECT"
         }
     }

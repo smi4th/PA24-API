@@ -20,6 +20,21 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT` (
     FOREIGN KEY (`account_type`) REFERENCES `ACCOUNT_TYPE`(`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `PROVIDER` (
+    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL,
+    `email` VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS `PROVIDER_ACCOUNT` (
+    `administration_level` INT NOT NULL,
+    `provider` VARCHAR(40) NOT NULL,
+    `account` VARCHAR(40) NOT NULL,
+    PRIMARY KEY (`provider`, `account`),
+    FOREIGN KEY (`provider`) REFERENCES `PROVIDER`(`id`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
     `id` VARCHAR(40) NOT NULL PRIMARY KEY,
     `name` VARCHAR(45) NOT NULL
@@ -54,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT_SERVICES` (
     FOREIGN KEY (`services`) REFERENCES `SERVICES`(`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `consume` (
+CREATE TABLE IF NOT EXISTS `CONSUME` (
     `report` TEXT NOT NULL,
     `notice` TEXT NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
@@ -64,21 +79,6 @@ CREATE TABLE IF NOT EXISTS `consume` (
     PRIMARY KEY (`account`, `services`),
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
     FOREIGN KEY (`services`) REFERENCES `SERVICES`(`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `PROVIDER` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL,
-    `email` VARCHAR(45) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS `PROVIDER_ACCOUNT` (
-    `administration_level` INT NOT NULL,
-    `provider` VARCHAR(40) NOT NULL,
-    `account` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`provider`, `account`),
-    FOREIGN KEY (`provider`) REFERENCES `PROVIDER`(`id`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (

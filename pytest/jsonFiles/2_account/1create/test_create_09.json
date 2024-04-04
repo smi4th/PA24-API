@@ -8,14 +8,21 @@
             "password": "P@ssw0rd",
             "first_name": "firstName",
             "last_name": "lastName",
-            "email": "INJECT",
-            "account_type": "UNPREDEFINED"
+            "email": "RANDOMIZED",
+            "account_type": "INJECT_FOREIGN:accounttype_id"
         }
     },
     "response": {
-        "status_code": 400,
+        "status_code": 201,
         "body": {
-            "message": "Email already taken"
+            "message": "Account created",
+            "id": "UNPREDEFINED",
+            "username": "INJECT",
+            "first_name": "firstName",
+            "last_name": "lastName",
+            "email": "INJECT",
+            "account_type": "INJECT_FOREIGN:accounttype_id",
+            "creation_date": "UNPREDEFINED"
         }
     }
 }

@@ -4,18 +4,18 @@
         "urlParams": {},
         "method": "POST",
         "body": {
-            "username": "LOREMIPSUMDOLORSITAMETCONSECTETURADIPISICINGELITSEDDOEIUSMODTEMPORINCIDIDUNTUTLABOREETDOLOREMAGNAALI",
-            "password": "P@ssw0rd",
+            "username": "RANDOMIZED",
+            "password": "s",
             "first_name": "firstName",
             "last_name": "lastName",
             "email": "RANDOMIZED",
-            "account_type": "UNPREDEFINED"
+            "account_type": "INJECT_FOREIGN:accounttype_id"
         }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Username, password, first name or last name too long"
+            "message": "Username, password, first name or last name too short"
         }
     }
 }
