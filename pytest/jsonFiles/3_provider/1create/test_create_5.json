@@ -4,15 +4,14 @@
         "urlParams": {},
         "method": "POST",
         "body": {
-            "name": "RANDOMIZED"
+            "name": "RANDOMIZED",
+            "email": "INVALID"
         }
     },
     "response": {
-        "status_code": 201,
+        "status_code": 400,
         "body": {
-            "message": "Provider created",
-            "id": "UNPREDEFINED",
-            "name": "INJECT"
+            "message": "Invalid email"
         }
     }
 }

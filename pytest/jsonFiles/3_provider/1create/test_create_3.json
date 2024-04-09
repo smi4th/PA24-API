@@ -4,7 +4,8 @@
         "urlParams": {},
         "method": "POST",
         "body": {
-            "name": "a"
+            "name": "a",
+            "email": "RANDOMIZED"
         }
     },
     "response": {

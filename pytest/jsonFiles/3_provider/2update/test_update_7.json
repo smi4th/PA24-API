@@ -6,13 +6,16 @@
         },
         "method": "PUT",
         "body": {
-            "name": "INJECT"
+            "name": "RANDOMIZED"
         }
     },
     "response": {
-        "status_code": 400,
+        "status_code": 200,
         "body": {
-            "message": "Provider already exists"
+            "message": "Provider updated",
+            "id": "INJECT",
+            "name": "INJECT",
+            "email": "INJECT"
         }
     }
 }

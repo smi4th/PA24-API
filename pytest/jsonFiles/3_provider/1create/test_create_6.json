@@ -4,13 +4,17 @@
         "urlParams": {},
         "method": "POST",
         "body": {
-            "name": "INJECT"
+            "name": "RANDOMIZED",
+            "email": "RANDOMIZED"
         }
     },
     "response": {
-        "status_code": 400,
+        "status_code": 201,
         "body": {
-            "message": "Provider already exists"
+            "message": "Provider created",
+            "id": "UNPREDEFINED",
+            "name": "INJECT",
+            "email": "INJECT"
         }
     }
 }

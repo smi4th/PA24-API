@@ -1,19 +1,17 @@
 {
     "request": {
         "url": "provider",
-        "urlParams": {
-            "id": "INVALID"
-        },
-        "method": "PUT",
+        "urlParams": {},
+        "method": "POST",
         "body": {
-            "name": "RANDOMIZED",
+            "name": "INJECT",
             "email": "RANDOMIZED"
         }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Provider does not exist"
+            "message": "Provider already exists"
         }
     }
 }

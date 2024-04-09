@@ -6,7 +6,8 @@
         },
         "method": "PUT",
         "body": {
-            "name": "a"
+            "name": "a",
+            "email": "a"
         }
     },
     "response": {

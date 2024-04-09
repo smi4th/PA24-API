@@ -2,18 +2,17 @@
     "request": {
         "url": "provider",
         "urlParams": {
-            "id": "INVALID"
+            "id": "INJECT"
         },
         "method": "PUT",
         "body": {
-            "name": "RANDOMIZED",
-            "email": "RANDOMIZED"
+            "email": "INJECT"
         }
     },
     "response": {
         "status_code": 400,
         "body": {
-            "message": "Provider does not exist"
+            "message": "Email already exists"
         }
     }
 }
