@@ -236,6 +236,28 @@ func BodyValueToArray(body map[string]interface{}, key string) []interface{} {
 
 /*
 #######################################
+########## Global Functions ###########
+#######################################
+*/
+
+func getLimit(query map[string]string) int {
+	limit, err := strconv.Atoi(query["limit"])
+	if err != nil {
+		return 0
+	}
+	return limit
+}
+
+func getOffset(query map[string]string) int {
+	offset, err := strconv.Atoi(query["offset"])
+	if err != nil {
+		return 0
+	}
+	return offset
+}
+
+/*
+#######################################
 ########## Database Functions #########
 #######################################
 */

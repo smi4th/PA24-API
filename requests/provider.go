@@ -94,21 +94,25 @@ func ProviderGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "name", "id") {
+	if tools.AtLeastOneValueInQuery(query, "name", "id", "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `id`, `name` FROM `PROVIDER` WHERE "
+	request := "SELECT `id`, `name` FROM `PROVIDER`"
 	var params []interface{}
-	strictSearch := query["strictSearch"] == "true"
 
-	for key, value := range query {
-		tools.AppendCondition(&request, &params, key, value, strictSearch)
+	if query["all"] != "true" {
+		request += " WHERE "
+		strictSearch := query["strictSearch"] == "true"
+
+		for key, value := range query {
+			tools.AppendCondition(&request, &params, key, value, strictSearch)
+		}
+
+		// Removing the last "AND"
+		request = request[:len(request)-3]
 	}
-
-	// Removing the last "AND"
-	request = request[:len(request)-3]
 
 	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
@@ -278,7 +282,9 @@ func ProviderGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 			}
 			jsonResponse += `{"id": "` + id + `", "name": "` + name + `"},`
 		}
-		jsonResponse = jsonResponse[:len(jsonResponse)-1]
+		if len(jsonResponse) > 1 {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1]
+		}
 		jsonResponse += `]`
 		return jsonResponse, nil
 	default:

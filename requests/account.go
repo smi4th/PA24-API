@@ -131,21 +131,26 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "id", "username", "first_name", "last_name", "email", "account_type", "creation_date") {
+	if tools.AtLeastOneValueInQuery(query, "id", "username", "first_name", "last_name", "email", "account_type", "creation_date", "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
-
-	request := "SELECT `id`, `username`, `first_name`, `last_name`, `email`, `account_type`, `creation_date` FROM `ACCOUNT` WHERE "
+	
+	request := "SELECT `id`, `username`, `first_name`, `last_name`, `email`, `account_type`, `creation_date` FROM `ACCOUNT`"
 	var params []interface{}
-	strictSearch := query["strictSearch"] == "true"
 
-	for key, value := range query {
-		tools.AppendCondition(&request, &params, key, value, strictSearch)
+	if query["all"] != "true" {
+
+		request += " WHERE "
+		strictSearch := query["strictSearch"] == "true"
+	
+		for key, value := range query {
+			tools.AppendCondition(&request, &params, key, value, strictSearch)
+		}
+	
+		// Removing the last "AND"
+		request = request[:len(request)-3]
 	}
-
-	// Removing the last "AND"
-	request = request[:len(request)-3]
 
 	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
@@ -360,7 +365,9 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 			}
 			jsonResponse += `{"id": "` + id + `", "username": "` + username + `", "first_name": "` + firstName + `", "last_name": "` + lastName + `", "email": "` + email + `", "account_type": "` + accountType + `", "creation_date": "` + creation_date + `"},`
 		}
-		jsonResponse = jsonResponse[:len(jsonResponse)-1]
+		if len(jsonResponse) > 1 {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1]
+		}
 		jsonResponse += `]`
 		return jsonResponse, nil
 	default:
