@@ -1,0 +1,16 @@
+{
+    "request": {
+        "url": "subscription",
+        "urlParams" : {
+            "id": "1"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Subscription does not exist"
+        }
+    }
+}

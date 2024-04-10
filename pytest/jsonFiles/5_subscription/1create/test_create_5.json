@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "subscription",
+        "urlParams" : {},
+        "method": "POST",
+        "body": {
+            "name": "RANDOMIZED"
+        }
+    },
+    "response": {
+        "status_code": 201,
+        "body": {
+            "message": "Subscription created",
+            "id": "UNPREDEFINED",
+            "name": "INJECT"
+        }
+    }
+}

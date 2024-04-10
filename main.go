@@ -23,6 +23,8 @@ func main() {
 			requests.Provider(w, r, db)
 		case "/api/provider_account":
 			requests.ProviderAccount(w, r, db)
+		case "/api/subscription":
+			requests.Subscription(w, r, db)
 		default:
 			tools.JsonResponse(w, 404, `{"message": "Not found"}`)
 		}

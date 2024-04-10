@@ -1,0 +1,14 @@
+{
+    "request": {
+        "url": "subscription",
+        "urlParams" : {
+            "name": "INJECT"
+        },
+        "method": "GET",
+        "body": {}
+    },
+    "response": {
+        "status_code": 200,
+        "body": "[{\"id\": \"INJECT\",\"name\": \"INJECT\"}]"
+    }
+}
