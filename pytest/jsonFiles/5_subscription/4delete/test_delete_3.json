@@ -1,0 +1,17 @@
+{
+    "request": {
+        "url": "subscription",
+        "urlParams" : {
+            "id": "INJECT"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 200,
+        "body": {
+            "message": "Subscription deleted",
+            "id": "INJECT"
+        }
+    }
+}

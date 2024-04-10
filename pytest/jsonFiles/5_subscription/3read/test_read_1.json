@@ -1,0 +1,14 @@
+{
+    "request": {
+        "url": "subscription",
+        "urlParams" : {},
+        "method": "GET",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Missing fields"
+        }
+    }
+}
