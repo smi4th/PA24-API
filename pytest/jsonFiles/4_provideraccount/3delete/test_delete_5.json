@@ -1,0 +1,17 @@
+{
+    "request": {
+        "url": "provider_account",
+        "urlParams": {
+            "provider": "INJECT_FOREIGN:provider_id",
+            "account": "INJECT_FOREIGN:account_id"
+        },
+        "method": "DELETE",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Provider not associated with the account"
+        }
+    }
+}

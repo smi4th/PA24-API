@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "provider_account",
+        "urlParams": {},
+        "method": "POST",
+        "body": {
+            "provider": "INJECT_FOREIGN:provider_id",
+            "account": "INJECT_FOREIGN:account_id",
+            "administration_level": "0"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Provider already associated with the account"
+        }
+    }
+}

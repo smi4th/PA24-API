@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "provider_account",
+        "urlParams": {},
+        "method": "POST",
+        "body": {
+            "provider": "",
+            "account": "",
+            "administration_level": ""
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Empty fields"
+        }
+    }
+}

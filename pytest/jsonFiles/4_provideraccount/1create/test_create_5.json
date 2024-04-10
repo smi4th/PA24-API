@@ -1,0 +1,21 @@
+{
+    "request": {
+        "url": "provider_account",
+        "urlParams": {},
+        "method": "POST",
+        "body": {
+            "provider": "INJECT_FOREIGN:provider_id",
+            "account": "INJECT_FOREIGN:account_id",
+            "administration_level": "RANDOMIZED"
+        }
+    },
+    "response": {
+        "status_code": 201,
+        "body": {
+            "message": "ProviderAccount created",
+            "administration_level": "0",
+            "provider": "INJECT",
+            "account": "INJECT"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "provider_account",
+        "urlParams": {},
+        "method": "POST",
+        "body": {
+            "provider": "INJECT_FOREIGN:provider_id",
+            "account": "INVALID",
+            "administration_level": "INVALID"
+        }
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "message": "Account does not exist"
+        }
+    }
+}

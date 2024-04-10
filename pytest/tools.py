@@ -1,7 +1,7 @@
 import json, random, string, ast, requests
 
 def callAPI(data, headers, url):
-    print(data, headers, url)
+    print(data)
     match data["request"]["method"]:
         case "GET":
             response = requests.get(url, headers=headers, json=data["request"]["body"])
@@ -60,6 +60,9 @@ def formatJson(jsonPath):
                         elif value == "INJECT":
                             with open("pytest/temp.json", "r") as F:
                                 element[key] = json.load(F)[jsonPath.split("/")[-3].split("_")[1] + "_" + key]
+                        elif "INJECT_FOREIGN" in element[key]:
+                            with open("pytest/temp.json", "r") as F:
+                                element[key] = json.load(F)[element[key].split("INJECT_FOREIGN:")[1]]
 
     return data
 

@@ -537,6 +537,29 @@ func ElementExists(db *sql.DB, table string, attribute string, value string) boo
 	return false
 }
 
+func ElementExistsInLinkTable(db *sql.DB, table string, attribute1 string, value1 string, attribute2 string, value2 string) bool {
+	// Execute the query to count occurrences of the value in the specified table and attributes.
+	result, err := ExecuteQuery(db , "SELECT COUNT(`" + attribute1 + "`) as `count` FROM `" + table + "` WHERE `" + attribute1 + "` = ? AND `" + attribute2 + "` = ?", value1, value2)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	defer result.Close()
+
+	// Check if the `count` is greater than 0.
+	if result.Next() {
+		var count int
+		err := result.Scan(&count)
+		if err != nil {
+			ErrorLog(err.Error())
+			return false
+		}
+		return count > 0
+	}
+
+	return false
+}
+
 func EmailIsValid(email string) bool {
 	// Check if the email contains an @.
 	if !strings.Contains(email, "@") {

@@ -9,6 +9,12 @@ for (dirpath, dirnames, filenames) in os.walk("pytest"):
 
 ROOT = "pytest/pyTests"
 
+# remove the old files
+for path in [ROOT, f"{ROOT.split('/')[0]}/pyTestsCleanup"]:
+    for (dirpath, dirnames, filenames) in os.walk(path):
+        for filename in filenames:
+            os.remove(f"{dirpath}/{filename}")
+
 # create the new files
 for key, value in files.items():
 
@@ -36,4 +42,3 @@ for key, value in files.items():
                 
 with open(f"{ROOT.split('/')[0]}/pyTestsCleanup/test_removeTemp.py", "w") as f:
     f.write("def test_removeTemp(): import os; os.remove('pytest/temp.json'); assert True")
-    # f.write("assert True")
