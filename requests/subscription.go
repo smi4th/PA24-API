@@ -29,41 +29,46 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "name") {
+	if tools.ValuesNotInBody(body, `name`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	name := tools.BodyValueToString(body, "name")
+    name_ := tools.BodyValueToString(body, "name")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name) {
-		tools.JsonResponse(w, 400, `{"message": "Name cannot be empty"}`)
+	if tools.ValueIsEmpty(name_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, name) {
-		tools.JsonResponse(w, 400, `{"message": "Name too short"}`)
+	if tools.ValueTooShort(4, name_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
+		return
+	}
+	if tools.ValueTooLong(32, name_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(32, name) {
-		tools.JsonResponse(w, 400, `{"message": "Name too long"}`)
+    
+	
+	
+
+	
+
+	if tools.ElementExists(db, "SUBSCRIPTION", "name", name_) {
+		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
 		return
 	}
+	
 
-	// Checking if the subscription type is valid
-	if tools.ElementExists(db, "SUBSCRIPTION", "name", name) {
-		tools.JsonResponse(w, 400, `{"message": "Subscription already exists"}`)
-		return
-	}
+	uuid_ := tools.GenerateUUID()
 
-	uuid := tools.GenerateUUID()
-
-	// Inserting the account in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`id`, `name`) VALUES (?, ?)", uuid, name)
+	// Inserting the Subscription in the database
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`uuid`, `name`) VALUES (?, ?)", uuid_, name_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -75,20 +80,15 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	jsonResponse := `{"message": "Subscription created"`
 
 	// Adding the return fields of the query
-	fields, err := SubscriptionGetAll(db, uuid, false)
+	fields, err := SubscriptionGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
-	jsonResponse += "," + fields
-
-	tools.InfoLog(tools.RowsToJson(result))
-
-	jsonResponse += "}"
 
 	// Sending the response
-	tools.JsonResponse(w, 201, jsonResponse)
+	tools.JsonResponse(w, 201, jsonResponse + "," + fields + "}")
 
 }
 
@@ -100,12 +100,12 @@ func SubscriptionGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "id", "name", "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `id`, `name` FROM `SUBSCRIPTION`"
+	request := "SELECT `uuid`, `name` FROM `SUBSCRIPTION`"
 	var params []interface{}
 
 	if query["all"] != "true" {
@@ -150,46 +150,77 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "name") || tools.ValuesNotInQuery(query, "id") {
+	if tools.AtLeastOneValueInBody(body, `name`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
-	name := tools.BodyValueToString(body, "name")
+	uuid_ := query["uuid"]
+	
+    name_ := tools.BodyValueToString(body, "name")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(id, name) {
-		tools.JsonResponse(w, 400, `{"message": "ID and name cannot be empty"}`)
+	if tools.ValueIsEmpty(uuid_) {
+		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 		return
+	}
+
+	// for each key in the body, if the key is not in the query, return an error
+	for key, _ := range body {
+		// if the key is empty
+		if tools.ValueIsEmpty(tools.BodyValueToString(body, key)) {
+			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+			return
+		}
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, name) {
-		tools.JsonResponse(w, 400, `{"message": "Name too short"}`)
+	if tools.ValueTooShort(4, name_) {
+		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
+		return
+	}
+	if tools.ValueTooLong(32, name_) {
+		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(32, name) {
-		tools.JsonResponse(w, 400, `{"message": "Name too long"}`)
+    
+
+	if !tools.ElementExists(db, "SUBSCRIPTION", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Subscription does not exist"}`) 
 		return
 	}
-
-	// Checking if the subscription exists
-	if !tools.ElementExists(db, "SUBSCRIPTION", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Subscription does not exist"}`)
+	if tools.ElementExists(db, "SUBSCRIPTION", "name", name_) {
+		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
 		return
 	}
+	
 
-	// Checking if the subscription type is valid
-	if tools.ElementExists(db, "SUBSCRIPTION", "name", name) {
-		tools.JsonResponse(w, 400, `{"message": "Subscription already exists"}`)
-		return
+	
+
+    
+
+	request := "UPDATE `SUBSCRIPTION` SET "
+	var params []interface{}
+	
+	for key, value := range body {
+		if !tools.ValueInArray(key, `uuid`) {
+			if key == "password" {
+				value = tools.HashPassword(value.(string))
+			}
+			tools.AppendUpdate(&request, &params, key, value)
+		}
 	}
 
-	// Updating the subscription in the database
-	result, err := tools.ExecuteQuery(db, "UPDATE `SUBSCRIPTION` SET `name` = ? WHERE `id` = ?", name, id)
+	// Removing the last ","
+	request = request[:len(request)-2]
+
+	request += " WHERE uuid = ?"
+	params = append(params, uuid_)
+
+	// Updating the account in the database
+	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -199,19 +230,17 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Creating the response
 	jsonResponse := `{"message": "Subscription updated"`
-
+	
 	// Adding the return fields of the query
-	fields, err := SubscriptionGetAll(db, id, false)
+	fields, err := SubscriptionGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
 
-	jsonResponse += "," + fields + "}"
-
 	// Sending the response
-	tools.JsonResponse(w, 200, jsonResponse)
+	tools.JsonResponse(w, 200, jsonResponse + "," + fields + "}")
 
 }
 
@@ -223,21 +252,22 @@ func SubscriptionDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.ValuesNotInQuery(query, "id") {
+	if tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
+	uuid_ := query["uuid"]
+	
 
-	// Checking if the subscription exists
-	if !tools.ElementExists(db, "SUBSCRIPTION", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Subscription does not exist"}`)
+	if !tools.ElementExists(db, "SUBSCRIPTION", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Subscription does not exist"}`) 
 		return
 	}
+	
 
-	// Deleting the subscription in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `SUBSCRIPTION` WHERE `id` = ?", id)
+	// Deleting the Subscription in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -246,15 +276,15 @@ func SubscriptionDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Subscription deleted", "id": "` + id + `"}`
+	jsonResponse := `{"message": "Subscription deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
 
-func SubscriptionGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `id`, `name` FROM `SUBSCRIPTION` WHERE `id` = ?", uuid)
+func SubscriptionGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name` FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -264,18 +294,18 @@ func SubscriptionGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, erro
 }
 
 func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var id, name string
+	var uuid_, name_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&id, &name)
+			err := result.Scan(&uuid_, &name_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"id": "` + id + `", "name": "` + name + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -284,11 +314,11 @@ func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, 
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&id, &name)
+			err := result.Scan(&uuid_, &name_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"id": "` + id + `", "name": "` + name + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `"`, nil
 	}
 }

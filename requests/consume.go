@@ -226,9 +226,9 @@ func ConsumePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `CONSUME` SET "
 	var params []interface{}

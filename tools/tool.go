@@ -514,6 +514,15 @@ func PasswordNotStrong(password string) bool {
     return !(!ValueTooShort(8, password) && hasUpper && hasLower && hasNumber && hasSpecial)
 }
 
+func ValueInArray(value string, array ...string) bool {
+	for _, element := range array {
+		if element == value {
+			return true
+		}
+	}
+	return false
+}
+
 func ElementExists(db *sql.DB, table string, attribute string, value string) bool {
 	// Execute the query to count occurrences of the value in the specified table and attribute.
 	result, err := ExecuteQuery(db , "SELECT COUNT(`" + attribute + "`) as `count` FROM `" + table + "` WHERE `" + attribute + "` = ?", value)

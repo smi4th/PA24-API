@@ -197,9 +197,9 @@ func ServicesTypesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `SERVICES_TYPES` SET "
 	var params []interface{}

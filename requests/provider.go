@@ -29,63 +29,68 @@ func ProviderPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "name", "email") {
+	if tools.ValuesNotInBody(body, `name`, `email`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	name := tools.BodyValueToString(body, "name")
-	email := tools.BodyValueToString(body, "email")
+    name_ := tools.BodyValueToString(body, "name")
+	email_ := tools.BodyValueToString(body, "email")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name, email) {
-		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+	if tools.ValueIsEmpty(name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(8, name) {
-		tools.JsonResponse(w, 400, `{"message": "Value too short"}`)
+	if tools.ValueTooShort(4, name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
+		return
+	}
+	if tools.ValueTooLong(32, name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(64, name) {
-		tools.JsonResponse(w, 400, `{"message": "Value too long"}`)
-		return
+    
+	
+	
+
+	if !tools.ValueIsEmpty(email_) {
+		if !tools.EmailIsValid(email_) {
+			tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
+			return
+		}
 	}
 
-	if tools.EmailIsValid(email) == false {
-		tools.JsonResponse(w, 400, `{"message": "Invalid email"}`)
+	if tools.ElementExists(db, "PROVIDER", "name", name_) {
+		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
+		return
+	}
+	if tools.ElementExists(db, "PROVIDER", "email", email_) {
+		tools.JsonResponse(w, 400, `{"error": "This email already exists"}`) 
 		return
 	}
 	
-	// Checking if the name is already taken
-	if tools.ElementExists(db, "PROVIDER", "name", name) {
-		tools.JsonResponse(w, 400, `{"message": "Provider already exists"}`)
-		return
-	}
 
-	if tools.ElementExists(db, "PROVIDER", "email", email) {
-		tools.JsonResponse(w, 400, `{"message": "Email already exists"}`)
-		return
-	}
+	uuid_ := tools.GenerateUUID()
 
-	uuid := tools.GenerateUUID()
-
-	// Inserting the provider in the database
-	_, err := tools.ExecuteQuery(db, "INSERT INTO `PROVIDER` (`id`, `name`, `email`) VALUES (?, ?, ?)", uuid, name, email)
+	// Inserting the Provider in the database
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `PROVIDER` (`uuid`, `name`, `email`) VALUES (?, ?, ?)", uuid_, name_, email_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
+	defer result.Close()
 
 	// Creating the response
 	jsonResponse := `{"message": "Provider created"`
 
 	// Adding the return fields of the query
-	fields, err := ProviderGetAll(db, uuid, false)
+	fields, err := ProviderGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -105,12 +110,12 @@ func ProviderGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "name", "id", "email", "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `email`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `id`, `name`, `email` FROM `PROVIDER`"
+	request := "SELECT `uuid`, `name`, `email` FROM `PROVIDER`"
 	var params []interface{}
 
 	if query["all"] != "true" {
@@ -155,22 +160,26 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, "name", "email") || tools.ValuesNotInQuery(query, "id") {
+	if tools.AtLeastOneValueInBody(body, `name`, `email`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
-	name := tools.BodyValueToString(body, "name")
-	email := tools.BodyValueToString(body, "email")
+	uuid_ := query["uuid"]
+	
+    name_ := tools.BodyValueToString(body, "name")
+	email_ := tools.BodyValueToString(body, "email")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(id) {
+	if tools.ValueIsEmpty(uuid_) {
 		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 		return
 	}
 
+	// for each key in the body, if the key is not in the query, return an error
 	for key, _ := range body {
+		// if the key is empty
 		if tools.ValueIsEmpty(tools.BodyValueToString(body, key)) {
 			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 			return
@@ -178,44 +187,48 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(8, name) {
-		tools.JsonResponse(w, 400, `{"message": "Values too short"}`)
+	if tools.ValueTooShort(4, name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
+		return
+	}
+	if tools.ValueTooLong(32, name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(64, name) {
-		tools.JsonResponse(w, 400, `{"message": "Values too long"}`)
+    
+
+	if !tools.ElementExists(db, "PROVIDER", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Provider does not exist"}`) 
 		return
 	}
+	if tools.ElementExists(db, "PROVIDER", "name", name_) {
+		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
+		return
+	}
+	if tools.ElementExists(db, "PROVIDER", "email", email_) {
+		tools.JsonResponse(w, 400, `{"error": "This email already exists"}`) 
+		return
+	}
+	
 
-	if !tools.ValueIsEmpty(email) {
-		if tools.EmailIsValid(email) == false {
-			tools.JsonResponse(w, 400, `{"message": "Invalid email"}`)
+	
+
+    if !tools.ValueIsEmpty(email_) {
+		if !tools.EmailIsValid(email_) {
+			tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
 			return
 		}
-	}
-
-	if !tools.ElementExists(db, "PROVIDER", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Provider does not exist"}`)
-		return
-	}
-
-	if tools.ElementExists(db, "PROVIDER", "name", name) {
-		tools.JsonResponse(w, 400, `{"message": "Provider already exists"}`)
-		return
-	}
-
-	if tools.ElementExists(db, "PROVIDER", "email", email) {
-		tools.JsonResponse(w, 400, `{"message": "Email already exists"}`)
-		return
 	}
 
 	request := "UPDATE `PROVIDER` SET "
 	var params []interface{}
 	
 	for key, value := range body {
-		if key != "id" {
+		if !tools.ValueInArray(key, `uuid`) {
+			if key == "password" {
+				value = tools.HashPassword(value.(string))
+			}
 			tools.AppendUpdate(&request, &params, key, value)
 		}
 	}
@@ -223,10 +236,10 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Removing the last ","
 	request = request[:len(request)-2]
 
-	request += " WHERE `id` = ?"
-	params = append(params, id)
+	request += " WHERE uuid = ?"
+	params = append(params, uuid_)
 
-	// Updating the provider in the database
+	// Updating the account in the database
 	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
 		tools.ErrorLog(err.Error())
@@ -239,7 +252,7 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	jsonResponse := `{"message": "Provider updated"`
 	
 	// Adding the return fields of the query
-	fields, err := ProviderGetAll(db, id, false)
+	fields, err := ProviderGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -259,21 +272,22 @@ func ProviderDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.ValuesNotInQuery(query, "id") {
+	if tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
+	uuid_ := query["uuid"]
+	
 
-	// Checking if the provider exists
-	if !tools.ElementExists(db, "PROVIDER", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Provider does not exist"}`)
+	if !tools.ElementExists(db, "PROVIDER", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Provider does not exist"}`) 
 		return
 	}
+	
 
-	// Deleting the provider in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `PROVIDER` WHERE `id` = ?", id)
+	// Deleting the Provider in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `PROVIDER` WHERE uuid = ?", uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -282,15 +296,15 @@ func ProviderDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Provider deleted", "id": "` + id + `"}`
+	jsonResponse := `{"message": "Provider deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
 
-func ProviderGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `id`, `name`, `email` FROM `PROVIDER` WHERE `id` = ?", uuid)
+func ProviderGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `email` FROM `PROVIDER` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -300,18 +314,18 @@ func ProviderGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
 }
 
 func ProviderGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var id, name, email string
+	var uuid_, name_, email_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&id, &name, &email)
+			err := result.Scan(&uuid_, &name_, &email_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"id": "` + id + `", "name": "` + name + `", "email": "` + email + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -320,11 +334,11 @@ func ProviderGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&id, &name, &email)
+			err := result.Scan(&uuid_, &name_, &email_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"id": "` + id + `", "name": "` + name + `", "email": "` + email + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `"`, nil
 	}
 }

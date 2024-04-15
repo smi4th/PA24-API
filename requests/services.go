@@ -203,9 +203,9 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `SERVICES` SET "
 	var params []interface{}

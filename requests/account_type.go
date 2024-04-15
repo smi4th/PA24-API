@@ -29,41 +29,46 @@ func AccountTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "type") {
+	if tools.ValuesNotInBody(body, `type`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	type_ := tools.BodyValueToString(body, "type")
+    type_ := tools.BodyValueToString(body, "type")
+	
 
 	// Checking if the values are empty
 	if tools.ValueIsEmpty(type_) {
-		tools.JsonResponse(w, 400, `{"message": "Type cannot be empty"}`)
+		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
 	if tools.ValueTooShort(4, type_) {
-		tools.JsonResponse(w, 400, `{"message": "Type too short"}`)
+		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
-
-	// Checking if the values are too short or too long
 	if tools.ValueTooLong(32, type_) {
-		tools.JsonResponse(w, 400, `{"message": "Type too long"}`)
+		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-	// Checking if the account type is valid
+    
+	
+	
+
+	
+
 	if tools.ElementExists(db, "ACCOUNT_TYPE", "type", type_) {
-		tools.JsonResponse(w, 400, `{"message": "Account type already exists"}`)
+		tools.JsonResponse(w, 400, `{"error": "This type already exists"}`) 
 		return
 	}
+	
 
-	uuid := tools.GenerateUUID()
+	uuid_ := tools.GenerateUUID()
 
-	// Inserting the account in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT_TYPE` (`id`, `type`) VALUES (?, ?)", uuid, type_)
+	// Inserting the AccountType in the database
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT_TYPE` (`uuid`, `type`) VALUES (?, ?)", uuid_, type_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -72,23 +77,18 @@ func AccountTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Account type created"`
+	jsonResponse := `{"message": "AccountType created"`
 
 	// Adding the return fields of the query
-	fields, err := AccountTypeGetAll(db, uuid, false)
+	fields, err := AccountTypeGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
-	jsonResponse += "," + fields
-
-	tools.InfoLog(tools.RowsToJson(result))
-
-	jsonResponse += "}"
 
 	// Sending the response
-	tools.JsonResponse(w, 201, jsonResponse)
+	tools.JsonResponse(w, 201, jsonResponse + "," + fields + "}")
 
 }
 
@@ -100,12 +100,12 @@ func AccountTypeGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "id", "type", "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `type`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `id`, `type` FROM `ACCOUNT_TYPE`"
+	request := "SELECT `uuid`, `type` FROM `ACCOUNT_TYPE`"
 	var params []interface{}
 
 	if query["all"] != "true" {
@@ -150,46 +150,77 @@ func AccountTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "type") || tools.ValuesNotInQuery(query, "id") {
+	if tools.AtLeastOneValueInBody(body, `type`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
-	type_ := tools.BodyValueToString(body, "type")
+	uuid_ := query["uuid"]
+	
+    type_ := tools.BodyValueToString(body, "type")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(id, type_) {
-		tools.JsonResponse(w, 400, `{"message": "ID and type cannot be empty"}`)
+	if tools.ValueIsEmpty(uuid_) {
+		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 		return
+	}
+
+	// for each key in the body, if the key is not in the query, return an error
+	for key, _ := range body {
+		// if the key is empty
+		if tools.ValueIsEmpty(tools.BodyValueToString(body, key)) {
+			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+			return
+		}
 	}
 
 	// Checking if the values are too short or too long
 	if tools.ValueTooShort(4, type_) {
-		tools.JsonResponse(w, 400, `{"message": "type too short"}`)
+		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
 		return
 	}
-
-	// Checking if the values are too short or too long
 	if tools.ValueTooLong(32, type_) {
-		tools.JsonResponse(w, 400, `{"message": "type too long"}`)
+		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
-	// Checking if the account exists
-	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Account type does not exist"}`)
+    
+
+	if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This AccountType does not exist"}`) 
 		return
 	}
-
-	// Checking if the account type is valid
 	if tools.ElementExists(db, "ACCOUNT_TYPE", "type", type_) {
-		tools.JsonResponse(w, 400, `{"message": "Account type already exists"}`)
+		tools.JsonResponse(w, 400, `{"error": "This type already exists"}`) 
 		return
 	}
+	
+
+	
+
+    
+
+	request := "UPDATE `ACCOUNT_TYPE` SET "
+	var params []interface{}
+	
+	for key, value := range body {
+		if !tools.ValueInArray(key, `uuid`) {
+			if key == "password" {
+				value = tools.HashPassword(value.(string))
+			}
+			tools.AppendUpdate(&request, &params, key, value)
+		}
+	}
+
+	// Removing the last ","
+	request = request[:len(request)-2]
+
+	request += " WHERE uuid = ?"
+	params = append(params, uuid_)
 
 	// Updating the account in the database
-	result, err := tools.ExecuteQuery(db, "UPDATE `ACCOUNT_TYPE` SET `type` = ? WHERE `id` = ?", type_, id)
+	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -198,20 +229,18 @@ func AccountTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Account type updated"`
-
+	jsonResponse := `{"message": "AccountType updated"`
+	
 	// Adding the return fields of the query
-	fields, err := AccountTypeGetAll(db, id, false)
+	fields, err := AccountTypeGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
 
-	jsonResponse += "," + fields + "}"
-
 	// Sending the response
-	tools.JsonResponse(w, 200, jsonResponse)
+	tools.JsonResponse(w, 200, jsonResponse + "," + fields + "}")
 
 }
 
@@ -223,21 +252,22 @@ func AccountTypeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.ValuesNotInQuery(query, "id") {
+	if tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
+	uuid_ := query["uuid"]
+	
 
-	// Checking if the account exists
-	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Account type does not exist"}`)
+	if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This AccountType does not exist"}`) 
 		return
 	}
+	
 
-	// Deleting the account in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `ACCOUNT_TYPE` WHERE `id` = ?", id)
+	// Deleting the AccountType in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `ACCOUNT_TYPE` WHERE uuid = ?", uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -246,15 +276,15 @@ func AccountTypeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Account type deleted", "id": "` + id + `"}`
+	jsonResponse := `{"message": "AccountType deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
 
-func AccountTypeGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `id`, `type` FROM `ACCOUNT_TYPE` WHERE `id` = ?", uuid)
+func AccountTypeGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `type` FROM `ACCOUNT_TYPE` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -264,19 +294,18 @@ func AccountTypeGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error
 }
 
 func AccountTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var id string
-	var type_ string
+	var uuid_, type_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&id, &type_)
+			err := result.Scan(&uuid_, &type_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"id": "` + id + `", "type": "` + type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -285,11 +314,11 @@ func AccountTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, e
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&id, &type_)
+			err := result.Scan(&uuid_, &type_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"id": "` + id + `", "type": "` + type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `"`, nil
 	}
 }

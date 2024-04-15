@@ -191,9 +191,9 @@ func DisponibilityPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `DISPONIBILITY` SET "
 	var params []interface{}

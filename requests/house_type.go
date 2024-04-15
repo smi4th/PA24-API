@@ -197,9 +197,9 @@ func HouseTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `HOUSE_TYPE` SET "
 	var params []interface{}

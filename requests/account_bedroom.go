@@ -218,9 +218,9 @@ func AccountBedroomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `ACCOUNT_BEDROOM` SET "
 	var params []interface{}

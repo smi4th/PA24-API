@@ -218,9 +218,9 @@ func AccountServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `ACCOUNT_SERVICES` SET "
 	var params []interface{}

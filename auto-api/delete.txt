@@ -1,0 +1,33 @@
+func {{routeName}}Delete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	
+	// Getting the query parameters
+	query := tools.ReadQuery(r)
+	
+	tools.RequestLog(r, tools.ReadBody(r))
+
+	// Checking if the query contains the required fields
+	if tools.ValuesNotInQuery(query, {{primaryKeys}}) {
+		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
+		return
+	}
+
+	{{primaryKeys to var from query}}
+
+	{{uniqueFieldsTests}}
+
+	// Deleting the {{routeName}} in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `{{routeTable}}` WHERE {{primaryKeysSQL}}", {{primaryKeysVar}})
+	if err != nil {
+		tools.ErrorLog(err.Error())
+		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+		return
+	}
+	defer result.Close()
+
+	// Creating the response
+	jsonResponse := `{"message": "{{routeName}} deleted", {{primaryKeysJSON}}}`
+
+	// Sending the response
+	tools.JsonResponse(w, 200, jsonResponse)
+
+}

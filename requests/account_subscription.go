@@ -220,9 +220,9 @@ func AccountSubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `ACCOUNT_SUBSCRIPTION` SET "
 	var params []interface{}

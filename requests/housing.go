@@ -217,9 +217,9 @@ func HousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `HOUSING` SET "
 	var params []interface{}

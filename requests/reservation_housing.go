@@ -228,9 +228,9 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `RESERVATION_HOUSING` SET "
 	var params []interface{}

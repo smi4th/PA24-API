@@ -209,9 +209,9 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `BED_ROOM` SET "
 	var params []interface{}

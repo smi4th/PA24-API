@@ -4,26 +4,26 @@ CREATE DATABASE IF NOT EXISTS `database`;
 USE `database`;
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_TYPE` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `type` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `type` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `username` VARCHAR(45) NOT NULL,
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `username` VARCHAR(45) NOT NULL, -- UNIQUE
     `password` VARCHAR(60) NOT NULL,
     `first_name` VARCHAR(45) NOT NULL,
     `last_name` VARCHAR(45) NOT NULL,
-    `email` VARCHAR(45) NOT NULL,
-    `creation_date` DATE DEFAULT NOW(),
+    `email` VARCHAR(45) NOT NULL, -- UNIQUE
+    `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
     `account_type` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`account_type`) REFERENCES `ACCOUNT_TYPE`(`id`)
+    FOREIGN KEY (`account_type`) REFERENCES `ACCOUNT_TYPE`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `PROVIDER` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL,
-    `email` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL, -- UNIQUE
+    `email` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `PROVIDER_ACCOUNT` (
@@ -31,13 +31,13 @@ CREATE TABLE IF NOT EXISTS `PROVIDER_ACCOUNT` (
     `provider` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`provider`, `account`),
-    FOREIGN KEY (`provider`) REFERENCES `PROVIDER`(`id`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`)
+    FOREIGN KEY (`provider`) REFERENCES `PROVIDER`(`uuid`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
@@ -45,28 +45,28 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
     `account` VARCHAR(40) NOT NULL,
     `subscription` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `subscription`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`subscription`) REFERENCES `SUBSCRIPTION`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`subscription`) REFERENCES `SUBSCRIPTION`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `SERVICES_TYPES` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `type` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `type` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `SERVICES` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `price` DECIMAL(10, 2) NOT NULL, -- 10 digits, 2 decimal places
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `price` DECIMAL(10, 2) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`service_type`) REFERENCES `SERVICES_TYPES`(`id`)
+    FOREIGN KEY (`service_type`) REFERENCES `SERVICES_TYPES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_SERVICES` (
     `account` VARCHAR(40) NOT NULL,
     `services` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `services`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`services`) REFERENCES `SERVICES`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`services`) REFERENCES `SERVICES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `CONSUME` (
@@ -77,12 +77,12 @@ CREATE TABLE IF NOT EXISTS `CONSUME` (
     `services` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `services`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`services`) REFERENCES `SERVICES`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`services`) REFERENCES `SERVICES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `start_date` DATE DEFAULT NOW(),
     `end_date` DATE DEFAULT NOW()
 );
@@ -91,17 +91,17 @@ CREATE TABLE IF NOT EXISTS `DISPONIBILITY_ACCOUNT` (
     `disponibility` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`disponibility`, `account`),
-    FOREIGN KEY (`disponibility`) REFERENCES `DISPONIBILITY`(`id`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`)
+    FOREIGN KEY (`disponibility`) REFERENCES `DISPONIBILITY`(`uuid`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `HOUSE_TYPE` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `type` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `type` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `HOUSING` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `surface` DECIMAL(10, 2) NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `validated` BOOLEAN NOT NULL,
@@ -111,21 +111,21 @@ CREATE TABLE IF NOT EXISTS `HOUSING` (
     `street` VARCHAR(45) NOT NULL,
     `description` TEXT NOT NULL,
     `house_type` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`house_type`) REFERENCES `HOUSE_TYPE`(`id`)
+    FOREIGN KEY (`house_type`) REFERENCES `HOUSE_TYPE`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL -- UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `EQUIPMENT` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL,
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL, -- UNIQUE
     `description` TEXT NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `equipment_type` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`equipment_type`) REFERENCES `EQUIPMENT_TYPE`(`id`)
+    FOREIGN KEY (`equipment_type`) REFERENCES `EQUIPMENT_TYPE`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `HOUSING_EQUIPMENT` (
@@ -133,27 +133,27 @@ CREATE TABLE IF NOT EXISTS `HOUSING_EQUIPMENT` (
     `housing` VARCHAR(40) NOT NULL,
     `equipment` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`housing`, `equipment`),
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`id`),
-    FOREIGN KEY (`equipment`) REFERENCES `EQUIPMENT`(`id`)
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`),
+    FOREIGN KEY (`equipment`) REFERENCES `EQUIPMENT`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `BED_ROOM` (
-    `id` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `nbPlaces` INT NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `description` TEXT NOT NULL,
     `validated` BOOLEAN NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`id`)
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_BEDROOM` (
-    `creation_date` DATE DEFAULT NOW(),
+    `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
     `account` VARCHAR(40) NOT NULL,
     `bedroom` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `bedroom`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`bedroom`) REFERENCES `BED_ROOM`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`bedroom`) REFERENCES `BED_ROOM`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `RESERVATION_BEDROOM` (
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS `RESERVATION_BEDROOM` (
     `account` VARCHAR(40) NOT NULL,
     `bed_room` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `bed_room`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`bed_room`) REFERENCES `BED_ROOM`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`bed_room`) REFERENCES `BED_ROOM`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `RESERVATION_HOUSING` (
@@ -178,26 +178,27 @@ CREATE TABLE IF NOT EXISTS `RESERVATION_HOUSING` (
     `account` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `housing`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_HOUSING` (
-    `creation_date` DATE DEFAULT NOW(),
+    `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
     `account` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `housing`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`id`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `MESSAGE` (
+    `uuid` VARCHAR(40) NOT NULL,
     `creation_date` DATE DEFAULT NOW(),
     `content` TEXT NOT NULL,
     `note` INT NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `author` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `author`, `creation_date`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`id`),
-    FOREIGN KEY (`author`) REFERENCES `ACCOUNT`(`id`)
+    PRIMARY KEY (`account`, `author`, `uuid`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`author`) REFERENCES `ACCOUNT`(`uuid`)
 );

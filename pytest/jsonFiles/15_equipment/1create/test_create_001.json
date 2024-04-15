@@ -1,0 +1,14 @@
+{
+    "request": {
+        "url": "equipment",
+        "urlParams": {},
+        "method": "POST",
+        "body": {}
+    },
+    "response": {
+        "status_code": 400,
+        "body": {
+            "error": "This name already exists"
+        }
+    }
+}

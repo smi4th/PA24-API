@@ -29,89 +29,85 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, "username", "password", "first_name", "last_name", "email", "account_type") {
+	if tools.ValuesNotInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	username := tools.BodyValueToString(body, "username")
-	password := tools.BodyValueToString(body, "password")
-	firstName := tools.BodyValueToString(body, "first_name")
-	lastName := tools.BodyValueToString(body, "last_name")
-	email := tools.BodyValueToString(body, "email")
-	accountType := tools.BodyValueToString(body, "account_type")
+    username_ := tools.BodyValueToString(body, "username")
+	password_ := tools.BodyValueToString(body, "password")
+	first_name_ := tools.BodyValueToString(body, "first_name")
+	last_name_ := tools.BodyValueToString(body, "last_name")
+	email_ := tools.BodyValueToString(body, "email")
+	account_type_ := tools.BodyValueToString(body, "account_type")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(username, password, firstName, lastName, email, accountType) {
-		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(8, username, password) || tools.ValueTooShort(4, firstName, lastName) {
-		tools.JsonResponse(w, 400, `{"message": "Username, password, first name or last name too short"}`)
+	if tools.ValueTooShort(4, username_, password_, first_name_, last_name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
+		return
+	}
+	if tools.ValueTooLong(32, username_, password_, first_name_, last_name_, email_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(32, username, password, firstName, lastName) {
-		tools.JsonResponse(w, 400, `{"message": "Username, password, first name or last name too long"}`)
-		return
+    if !tools.ValueIsEmpty(account_type_) {
+		if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", account_type_) {
+			tools.JsonResponse(w, 400, `{"error": "This account_type does not exist"}`) 
+			return
+		}
+	}
+	
+	
+	if !tools.ValueIsEmpty(password_) {
+		if tools.PasswordNotStrong(password_) {
+			tools.JsonResponse(w, 400, `{"error": "Password is not strong enough"}`) 
+			return
+		} else {
+			password_ = tools.HashPassword(password_)
+		}
 	}
 
-	// Checking if the account type is valid
-	if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
-		tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
-		return
+	if !tools.ValueIsEmpty(email_) {
+		if !tools.EmailIsValid(email_) {
+			tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
+			return
+		}
 	}
 
-	if tools.ValueTooLong(64, email) {
-		tools.JsonResponse(w, 400, `{"message": "Email too long"}`)
+	if tools.ElementExists(db, "ACCOUNT", "username", username_) {
+		tools.JsonResponse(w, 400, `{"error": "This username already exists"}`) 
 		return
 	}
-
-	// Checking if the email is valid
-	if !tools.EmailIsValid(email) {
-		tools.JsonResponse(w, 400, `{"message": "Invalid email"}`)
-		return
-	}
-
-	// Checking if the password is strong enough
-	if tools.PasswordNotStrong(password) {
-		tools.JsonResponse(w, 400, `{"message": "Password not strong enough"}`)
+	if tools.ElementExists(db, "ACCOUNT", "email", email_) {
+		tools.JsonResponse(w, 400, `{"error": "This email already exists"}`) 
 		return
 	}
 	
-	// Checking if the email is already taken
-	if tools.ElementExists(db, "ACCOUNT", "email", email) {
-		tools.JsonResponse(w, 400, `{"message": "Email already taken"}`)
-		return
-	}
 
-	// Checking if the username is already taken
-	if tools.ElementExists(db, "ACCOUNT", "username", username) {
-		tools.JsonResponse(w, 400, `{"message": "Username already taken"}`)
-		return
-	}
+	uuid_ := tools.GenerateUUID()
 
-	// Hashing the password
-	hashedPassword := tools.HashPassword(password)
-
-	uuid := tools.GenerateUUID()
-
-	// Inserting the account in the database
-	_, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid, username, hashedPassword, firstName, lastName, email, accountType)
+	// Inserting the Account in the database
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT` (`uuid`, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, username_, password_, first_name_, last_name_, email_, account_type_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
+	defer result.Close()
 
 	// Creating the response
 	jsonResponse := `{"message": "Account created"`
 
 	// Adding the return fields of the query
-	fields, err := AccountGetAll(db, uuid, false)
+	fields, err := AccountGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -131,23 +127,22 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, "id", "username", "first_name", "last_name", "email", "account_type", "creation_date", "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
-	
-	request := "SELECT `id`, `username`, `first_name`, `last_name`, `email`, `account_type`, `creation_date` FROM `ACCOUNT`"
+
+	request := "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type` FROM `ACCOUNT`"
 	var params []interface{}
 
 	if query["all"] != "true" {
-
 		request += " WHERE "
 		strictSearch := query["strictSearch"] == "true"
-	
+
 		for key, value := range query {
 			tools.AppendCondition(&request, &params, key, value, strictSearch)
 		}
-	
+
 		// Removing the last "AND"
 		request = request[:len(request)-3]
 	}
@@ -182,22 +177,23 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, "username", "password", "first_name", "last_name", "email", "account_type", "creation_date") || tools.ValuesNotInQuery(query, "id") {
+	if tools.AtLeastOneValueInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
-	username := tools.BodyValueToString(body, "username")
-	password := tools.BodyValueToString(body, "password")
-	firstName := tools.BodyValueToString(body, "first_name")
-	lastName := tools.BodyValueToString(body, "last_name")
-	email := tools.BodyValueToString(body, "email")
-	accountType := tools.BodyValueToString(body, "account_type")
-	creationDate := tools.BodyValueToString(body, "creation_date")
+	uuid_ := query["uuid"]
+	
+    username_ := tools.BodyValueToString(body, "username")
+	password_ := tools.BodyValueToString(body, "password")
+	first_name_ := tools.BodyValueToString(body, "first_name")
+	last_name_ := tools.BodyValueToString(body, "last_name")
+	email_ := tools.BodyValueToString(body, "email")
+	account_type_ := tools.BodyValueToString(body, "account_type")
+	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(id) {
+	if tools.ValueIsEmpty(uuid_) {
 		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 		return
 	}
@@ -212,59 +208,58 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, username, password, firstName, lastName, creationDate) {
+	if tools.ValueTooShort(4, username_, password_, first_name_, last_name_, email_) {
 		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
 		return
 	}
-
-	// Checking if the values are too short or too long
-	if tools.ValueTooLong(32, username, password, firstName, lastName, creationDate) {
+	if tools.ValueTooLong(32, username_, password_, first_name_, last_name_, email_) {
 		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
-	if tools.ValueTooLong(64, email) {
-		tools.JsonResponse(w, 400, `{"message": "Email too long"}`)
-		return
-	}
-
-	if (!tools.ValueIsEmpty(accountType)) {
-		if !tools.ElementExists(db, "ACCOUNT_TYPE", "id", accountType) {
-			tools.JsonResponse(w, 400, `{"message": "Invalid account type"}`)
+    if !tools.ValueIsEmpty(account_type_) {
+		if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", account_type_) {
+			tools.JsonResponse(w, 400, `{"error": "This account_type does not exist"}`) 
 			return
 		}
 	}
+	
 
-	// Checking if the account exists
-	if !tools.ElementExists(db, "ACCOUNT", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Account does not exist"}`)
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Account does not exist"}`) 
 		return
 	}
+	if tools.ElementExists(db, "ACCOUNT", "username", username_) {
+		tools.JsonResponse(w, 400, `{"error": "This username already exists"}`) 
+		return
+	}
+	if tools.ElementExists(db, "ACCOUNT", "email", email_) {
+		tools.JsonResponse(w, 400, `{"error": "This email already exists"}`) 
+		return
+	}
+	
 
-	if !tools.ValueIsEmpty(password) {	
-		if tools.PasswordNotStrong(password) {
-			tools.JsonResponse(w, 400, `{"message": "Password not strong enough"}`)
+	if !tools.ValueIsEmpty(password_) {
+		if tools.PasswordNotStrong(password_) {
+			tools.JsonResponse(w, 400, `{"error": "Password is not strong enough"}`) 
 			return
+		} else {
+			password_ = tools.HashPassword(password_)
 		}
 	}
 
-	// Checking if the email is already taken
-	if tools.ElementExists(db, "ACCOUNT", "email", email) {
-		tools.JsonResponse(w, 400, `{"message": "Email already taken"}`)
-		return
-	}
-
-	// Checking if the username is already taken
-	if tools.ElementExists(db, "ACCOUNT", "username", username) {
-		tools.JsonResponse(w, 400, `{"message": "Username already taken"}`)
-		return
+    if !tools.ValueIsEmpty(email_) {
+		if !tools.EmailIsValid(email_) {
+			tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
+			return
+		}
 	}
 
 	request := "UPDATE `ACCOUNT` SET "
 	var params []interface{}
 	
 	for key, value := range body {
-		if key != "id" {
+		if !tools.ValueInArray(key, `uuid`) {
 			if key == "password" {
 				value = tools.HashPassword(value.(string))
 			}
@@ -275,8 +270,8 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Removing the last ","
 	request = request[:len(request)-2]
 
-	request += " WHERE `id` = ?"
-	params = append(params, id)
+	request += " WHERE uuid = ?"
+	params = append(params, uuid_)
 
 	// Updating the account in the database
 	result, err := tools.ExecuteQuery(db, request, params...)
@@ -291,7 +286,7 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	jsonResponse := `{"message": "Account updated"`
 	
 	// Adding the return fields of the query
-	fields, err := AccountGetAll(db, id, false)
+	fields, err := AccountGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -311,21 +306,22 @@ func AccountDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.ValuesNotInQuery(query, "id") {
+	if tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	id := query["id"]
+	uuid_ := query["uuid"]
+	
 
-	// Checking if the account exists
-	if !tools.ElementExists(db, "ACCOUNT", "id", id) {
-		tools.JsonResponse(w, 400, `{"message": "Account does not exist"}`)
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Account does not exist"}`) 
 		return
 	}
+	
 
-	// Deleting the account in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `ACCOUNT` WHERE `id` = ?", id)
+	// Deleting the Account in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `ACCOUNT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -334,15 +330,15 @@ func AccountDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Account deleted", "id": "` + id + `"}`
+	jsonResponse := `{"message": "Account deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
 
-func AccountGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `id`, `username`, `first_name`, `last_name`, `email`, `account_type`, `creation_date` FROM `ACCOUNT` WHERE `id` = ?", uuid)
+func AccountGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type` FROM `ACCOUNT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -352,18 +348,18 @@ func AccountGetAll(db *sql.DB, uuid string, arrayOutput bool) (string, error) {
 }
 
 func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var id, username, firstName, lastName, email, accountType, creation_date string
+	var uuid_, username_, first_name_, last_name_, email_, creation_date_, account_type_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&id, &username, &firstName, &lastName, &email, &accountType, &creation_date)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"id": "` + id + `", "username": "` + username + `", "first_name": "` + firstName + `", "last_name": "` + lastName + `", "email": "` + email + `", "account_type": "` + accountType + `", "creation_date": "` + creation_date + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -372,11 +368,11 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&id, &username, &firstName, &lastName, &email, &accountType, &creation_date)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"id": "` + id + `", "username": "` + username + `", "first_name": "` + firstName + `", "last_name": "` + lastName + `", "email": "` + email + `", "account_type": "` + accountType + `", "creation_date": "` + creation_date + `"`, nil
+		return `"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `"`, nil
 	}
 }

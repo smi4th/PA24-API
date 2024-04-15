@@ -215,9 +215,9 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	{{passwordCheck}}
+	
 
-    {{emailCheck}}
+    
 
 	request := "UPDATE `EQUIPMENT` SET "
 	var params []interface{}
