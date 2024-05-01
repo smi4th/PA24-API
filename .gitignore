@@ -7,5 +7,3 @@
 
 # Logs
 logs/*
-
-requests/*.go

@@ -256,6 +256,15 @@ func getOffset(query map[string]string) int {
 	return offset
 }
 
+func IsAuthenticated(r *http.Request, db *sql.DB) bool {
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		InfoLog("No token provided")
+		return false
+	}
+	return ElementExists(db, "account", "token", strings.Replace(token, "Bearer ", "", 1))
+}
+
 /*
 #######################################
 ########## Database Functions #########
@@ -398,6 +407,16 @@ func GenerateUUID() string {
 	uuid[8] = uuid[8]&^0xc0 | 0x80
 	uuid[6] = uuid[6]&^0xf0 | 0x40
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:])
+}
+
+func GenerateToken() string {
+	token := make([]byte, 32)
+	_, err := rand.Read(token)
+	if err != nil {
+		ErrorLog(err.Error())
+		return ""
+	}
+	return fmt.Sprintf("%x", token)
 }
 
 func HashPassword(password string) string {
