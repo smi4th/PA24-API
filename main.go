@@ -25,6 +25,11 @@ func main() {
 			return
 		}
 
+		if r.URL.Path == "/account_type" && r.Method == "GET" && r.URL.Query().Get("private") == "false" {
+			requests.AccountTypeGet(w, r, db)
+			return
+		}
+
 		// Check if the user is authenticated
 		if !tools.IsAuthenticated(r, db) {
 			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)

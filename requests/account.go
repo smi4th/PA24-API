@@ -194,11 +194,9 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 	}
-	
-	jsonResponse = `{"total": ` + count + `, "accounts": ` + jsonResponse + `}`
 
 	// Sending the response
-	tools.JsonResponse(w, 200, jsonResponse)
+	tools.JsonResponse(w, 200, `{"total": ` + count + `, "data": ` + jsonResponse + `}`)
 
 }
 

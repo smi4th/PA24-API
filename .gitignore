@@ -6,4 +6,4 @@
 *.env
 
 # Logs
-logs/*
+logs/*.log

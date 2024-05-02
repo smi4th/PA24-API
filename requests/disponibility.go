@@ -104,17 +104,22 @@ func DisponibilityGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	request := "SELECT `uuid`, `start_date`, `end_date` FROM `DISPONIBILITY`"
 	var params []interface{}
+	countRequest := "SELECT COUNT(*) FROM `DISPONIBILITY`"
+	var countParams []interface{}
 
 	if query["all"] != "true" {
 		request += " WHERE "
+		countRequest += " WHERE "
 		strictSearch := query["strictSearch"] == "true"
 
 		for key, value := range query {
 			tools.AppendCondition(&request, &params, key, value, strictSearch)
+			tools.AppendCondition(&countRequest, &countParams, key, value, strictSearch)
 		}
 
 		// Removing the last "AND"
 		request = request[:len(request)-3]
+		countRequest = countRequest[:len(countRequest)-3]
 	}
 
 	if query["limit"] != "" {
@@ -141,8 +146,26 @@ func DisponibilityGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	result, err = tools.ExecuteQuery(db, countRequest, countParams...)
+	if err != nil {
+		tools.ErrorLog(err.Error())
+		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+		return
+	}
+	defer result.Close()
+
+	var count string
+	for result.Next() {
+		err := result.Scan(&count)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+	}
+
 	// Sending the response
-	tools.JsonResponse(w, 200, jsonResponse)
+	tools.JsonResponse(w, 200, `{"total": ` + count + `, "data": ` + jsonResponse + `}`)
 
 }
 
