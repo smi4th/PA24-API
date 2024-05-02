@@ -621,7 +621,7 @@ func AppendLikeCondition(request *string, params *[]interface{}, field, value st
 // appendCondition appends a condition to the SQL query if the provided value is non-empty or if it's a non-strict search.
 // It updates both the SQL query and the parameters slice accordingly.
 func AppendCondition(request *string, params *[]interface{}, field, value string, strictSearch bool) {
-    if value != "" && field != "strictSearch" {
+    if value != "" && !ValueInArray(field, "strictSearch", "limit", "offset") {
         // Determine the logical operator based on strict or non-strict search.
         operator := "OR"
         if strictSearch {

@@ -134,6 +134,14 @@ func ReservationHousingGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		request = request[:len(request)-3]
 	}
 
+	if query["limit"] != "" {
+		request += " LIMIT " + query["limit"]
+
+		if query["offset"] != "" {
+			request += " OFFSET " + query["offset"]
+		}
+	}
+
 	result, err := tools.ExecuteQuery(db, request, params...)
 	if err != nil {
 		tools.ErrorLog(err.Error())

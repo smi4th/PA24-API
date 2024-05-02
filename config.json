@@ -1,16 +1,19 @@
 {
     "database": {
-        "host": "10.2.1.1",
+        "host": "127.0.0.1",
         "port": "3306",
         "username": "root",
-        "password": "root",
+        "password": "",
         "database": "database"
     },
     
     "logs": {
         "path": "logs.log",
         "level": [
-            "error"
+            "error",
+            "request",
+            "response",
+            "info"
         ]
     }
 }
