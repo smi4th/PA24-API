@@ -29,16 +29,18 @@ func AccountTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `type`) {
+	if tools.ValuesNotInBody(body, `type`, `private`, `admin`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     type_ := tools.BodyValueToString(body, "type")
+	private_ := tools.BodyValueToString(body, "private")
+	admin_ := tools.BodyValueToString(body, "admin")
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(type_) {
+	if tools.ValueIsEmpty(type_, private_, admin_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -68,7 +70,7 @@ func AccountTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the AccountType in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT_TYPE` (`uuid`, `type`) VALUES (?, ?)", uuid_, type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT_TYPE` (`uuid`, `type`, `private`, `admin`) VALUES (?, ?, ?, ?)", uuid_, type_, private_, admin_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -100,12 +102,12 @@ func AccountTypeGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `type`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `type`, `private`, `admin`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `type` FROM `ACCOUNT_TYPE`"
+	request := "SELECT `uuid`, `type`, `private`, `admin` FROM `ACCOUNT_TYPE`"
 	var params []interface{}
 
 	if query["all"] != "true" {
@@ -158,7 +160,7 @@ func AccountTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `type`, `private`, `admin`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -292,7 +294,7 @@ func AccountTypeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func AccountTypeGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `type` FROM `ACCOUNT_TYPE` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `type`, `private`, `admin` FROM `ACCOUNT_TYPE` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -302,18 +304,18 @@ func AccountTypeGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, erro
 }
 
 func AccountTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, type_ string
+	var uuid_, type_, private_, admin_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &type_)
+			err := result.Scan(&uuid_, &type_, &private_, &admin_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `", "private": "` + private_ + `", "admin": "` + admin_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -322,11 +324,11 @@ func AccountTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, e
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &type_)
+			err := result.Scan(&uuid_, &type_, &private_, &admin_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `", "private": "` + private_ + `", "admin": "` + admin_ + `"`, nil
 	}
 }
