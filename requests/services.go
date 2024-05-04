@@ -13,13 +13,13 @@ func Services(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		ServicesGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			ServicesPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			ServicesDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -47,7 +47,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	account_ := tools.BodyValueToString(body, "account")
 	service_type_ := tools.BodyValueToString(body, "service_type")
 
-	if tools.GetUUID(r, db) != tools.GetElement(db, "ACCOUNT", "uuid", "uuid", account_) {
+	if tools.GetUUID(r, db) != tools.GetElement(db, "ACCOUNT", "uuid", "uuid", account_) && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}

@@ -13,7 +13,7 @@ func AccountSubscription(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		AccountSubscriptionGet(w, r, db)
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SUBSCRIPTION", "account", "subscription", tools.ReadQuery(r)["subscription"], "account", tools.ReadQuery(r)["account"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SUBSCRIPTION", "account", "subscription", tools.ReadQuery(r)["subscription"], "account", tools.ReadQuery(r)["account"]) || tools.IsAdmin(r, db) {
 			AccountSubscriptionDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -39,7 +39,7 @@ func AccountSubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB)
 	account_ := tools.BodyValueToString(body, "account")
 	subscription_ := tools.BodyValueToString(body, "subscription")
 
-	if tools.GetUUID(r, db) != account_ {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}

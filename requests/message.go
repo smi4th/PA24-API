@@ -13,13 +13,13 @@ func Message(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		MessageGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) || tools.IsAdmin(r, db) {
 			MessagePut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) || tools.IsAdmin(r, db) {
 			MessageDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -46,7 +46,7 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	account_ := tools.BodyValueToString(body, "account")
 	author_ := tools.BodyValueToString(body, "author")
 	
-	if tools.GetUUID(r, db) != author_ {
+	if tools.GetUUID(r, db) != author_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		return
 	}

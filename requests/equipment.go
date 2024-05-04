@@ -13,13 +13,13 @@ func Equipment(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		EquipmentGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) || tools.IsAdmin(r, db) {
 			EquipmentPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) || tools.IsAdmin(r, db) {
 			EquipmentDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -49,7 +49,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	equipment_type_ := tools.BodyValueToString(body, "equipment_type")
 	housing_ := tools.BodyValueToString(body, "housing")
 
-	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) {
+	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}

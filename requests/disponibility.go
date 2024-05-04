@@ -13,13 +13,13 @@ func Disponibility(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		DisponibilityGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			DisponibilityPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			DisponibilityDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -46,7 +46,7 @@ func DisponibilityPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	end_date_ := tools.BodyValueToString(body, "end_date")
 	account_ := tools.BodyValueToString(body, "account")
 
-	if tools.GetUUID(r, db) != account_ {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}

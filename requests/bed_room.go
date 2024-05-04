@@ -13,13 +13,17 @@ func BedRoom(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		BedRoomGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "BED_ROOM", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "BED_ROOM", "housing", "uuid", tools.ReadQuery(r)["uuid"])) || tools.IsAdmin(r, db) {
 			BedRoomPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		BedRoomDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "BED_ROOM", "housing", "uuid", tools.ReadQuery(r)["uuid"])) || tools.IsAdmin(r, db) {
+			BedRoomDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -42,6 +46,11 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	price_ := tools.BodyValueToString(body, "price")
 	description_ := tools.BodyValueToString(body, "description")
 	housing_ := tools.BodyValueToString(body, "housing")
+
+	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) && !tools.IsAdmin(r, db) && !tools.IsAdmin(r, db) {
+		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		return
+	}
 	
 
 	// Checking if the values are empty

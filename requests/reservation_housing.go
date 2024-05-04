@@ -13,13 +13,13 @@ func ReservationHousing(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		ReservationHousingGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) || tools.IsAdmin(r, db) {
 			ReservationHousingPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) || tools.IsAdmin(r, db) {
 			ReservationHousingDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -49,7 +49,7 @@ func ReservationHousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	account_ := tools.BodyValueToString(body, "account")
 	housing_ := tools.BodyValueToString(body, "housing")
 
-	if tools.GetUUID(r, db) != account_ {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		return
 	}

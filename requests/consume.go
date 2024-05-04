@@ -13,13 +13,13 @@ func Consume(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		ConsumeGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.IsAdmin(r, db) {
 			ConsumePut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) {
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.IsAdmin(r, db) {
 			ConsumeDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -48,7 +48,7 @@ func ConsumePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	services_ := tools.BodyValueToString(body, "services")
 	account_ := tools.BodyValueToString(body, "account")
 	
-	if tools.GetUUID(r, db) != account_ {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}

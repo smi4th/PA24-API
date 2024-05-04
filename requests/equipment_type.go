@@ -9,13 +9,25 @@ import (
 func EquipmentType(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		EquipmentTypePost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			EquipmentTypePost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "GET":
 		EquipmentTypeGet(w, r, db)
 	case "PUT":
-		EquipmentTypePut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			EquipmentTypePut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		EquipmentTypeDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			EquipmentTypeDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}

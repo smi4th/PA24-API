@@ -13,13 +13,13 @@ func Account(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		AccountGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			AccountPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			AccountDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)

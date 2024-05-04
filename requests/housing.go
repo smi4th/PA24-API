@@ -13,13 +13,13 @@ func Housing(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		HousingGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			HousingPut(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
 			HousingDelete(w, r, db)
 		} else {
 			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -52,7 +52,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	house_type_ := tools.BodyValueToString(body, "house_type")
 	account_ := tools.BodyValueToString(body, "account")
 
-	if tools.GetUUID(r, db) != account_ {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}
