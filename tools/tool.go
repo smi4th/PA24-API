@@ -392,6 +392,7 @@ func CloseDatabaseConnection(db *sql.DB) {
 }
 
 func ExecuteQuery(db *sql.DB, query string, args ...interface{}) (*sql.Rows, error) {
+	query = strings.ToUpper(query)
 	SQLLog("Preparing query: " + query)
 	stmt, err := db.Prepare(query)
 	if err != nil {
