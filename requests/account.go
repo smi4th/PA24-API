@@ -13,10 +13,18 @@ func Account(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		AccountGet(w, r, db)
 	case "PUT":
-		AccountPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) {
+			AccountPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		AccountDelete(w, r, db)
-	default:
+		if tools.GetUUID(r, db) == tools.GetElement(db, "ACCOUNT", "uuid", "uuid", tools.ReadQuery(r)["uuid"]) {
+			AccountDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
+		default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
 }
@@ -43,7 +51,7 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_) {
+	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_, account_type_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -58,28 +66,22 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-    if !tools.ValueIsEmpty(account_type_) {
-		if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", account_type_) {
-			tools.JsonResponse(w, 400, `{"error": "This account_type does not exist"}`) 
-			return
-		}
+	if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", account_type_) {
+		tools.JsonResponse(w, 400, `{"error": "This account_type does not exist"}`) 
+		return
 	}
 	
 	
-	if !tools.ValueIsEmpty(password_) {
-		if tools.PasswordNotStrong(password_) {
-			tools.JsonResponse(w, 400, `{"error": "Password is not strong enough"}`) 
-			return
-		} else {
-			password_ = tools.HashPassword(password_)
-		}
+	if tools.PasswordNotStrong(password_) {
+		tools.JsonResponse(w, 400, `{"error": "Password is not strong enough"}`) 
+		return
+	} else {
+		password_ = tools.HashPassword(password_)
 	}
 
-	if !tools.ValueIsEmpty(email_) {
-		if !tools.EmailIsValid(email_) {
-			tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
-			return
-		}
+	if !tools.EmailIsValid(email_) {
+		tools.JsonResponse(w, 400, `{"error": "Email is not valid"}`) 
+		return
 	}
 
 	if tools.ElementExists(db, "ACCOUNT", "username", username_) {
@@ -127,12 +129,12 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all", "provider") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type` FROM `ACCOUNT`"
+	request := "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider` FROM `ACCOUNT`"
 	var params []interface{}
 
 	countRequest := "SELECT COUNT(*) FROM `ACCOUNT`"
@@ -209,7 +211,7 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `provider`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -222,6 +224,7 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	last_name_ := tools.BodyValueToString(body, "last_name")
 	email_ := tools.BodyValueToString(body, "email")
 	account_type_ := tools.BodyValueToString(body, "account_type")
+	provider_ := tools.BodyValueToString(body, "provider")
 	
 
 	// Checking if the values are empty
@@ -252,6 +255,13 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     if !tools.ValueIsEmpty(account_type_) {
 		if !tools.ElementExists(db, "ACCOUNT_TYPE", "uuid", account_type_) {
 			tools.JsonResponse(w, 400, `{"error": "This account_type does not exist"}`) 
+			return
+		}
+	}
+
+	if !tools.ValueIsEmpty(provider_) {
+		if !tools.ElementExists(db, "PROVIDER", "uuid", provider_) {
+			tools.JsonResponse(w, 400, `{"error": "This provider does not exist"}`)
 			return
 		}
 	}
@@ -370,7 +380,7 @@ func AccountDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func AccountGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type` FROM `ACCOUNT` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider` FROM `ACCOUNT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -381,17 +391,24 @@ func AccountGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
 
 func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
 	var uuid_, username_, first_name_, last_name_, email_, creation_date_, account_type_ string
+	var provider_ sql.NullString
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `"},`
+			var provider string
+			if provider_.Valid {
+				provider = provider_.String
+			} else {
+				provider = ""
+			}
+			jsonResponse += `{"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -400,11 +417,17 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `"`, nil
+		var provider string
+		if provider_.Valid {
+			provider = provider_.String
+		} else {
+			provider = ""
+		}
+		return `"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `"`, nil
 	}
 }

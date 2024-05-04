@@ -13,7 +13,11 @@ func BedRoom(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		BedRoomGet(w, r, db)
 	case "PUT":
-		BedRoomPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "BED_ROOM", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+			BedRoomPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
 		BedRoomDelete(w, r, db)
 	default:
@@ -29,7 +33,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `nbPlaces`, `price`, `description`, `validated`, `housing`) {
+	if tools.ValuesNotInBody(body, `nbPlaces`, `price`, `description`, `housing`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -37,23 +41,18 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     nbPlaces_ := tools.BodyValueToString(body, "nbPlaces")
 	price_ := tools.BodyValueToString(body, "price")
 	description_ := tools.BodyValueToString(body, "description")
-	validated_ := tools.BodyValueToString(body, "validated")
 	housing_ := tools.BodyValueToString(body, "housing")
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(nbPlaces_, price_, description_, validated_) {
+	if tools.ValueIsEmpty(nbPlaces_, price_, description_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, nbPlaces_, price_, description_, validated_) {
+	if tools.ValueTooShort(4, description_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, nbPlaces_, price_, description_, validated_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
@@ -74,7 +73,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the BedRoom in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, nbPlaces_, price_, description_, validated_, housing_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`) VALUES (?, ?, ?, ?, false, ?)", uuid_, nbPlaces_, price_, description_, housing_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -194,10 +193,6 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	uuid_ := query["uuid"]
 	
-    nbPlaces_ := tools.BodyValueToString(body, "nbPlaces")
-	price_ := tools.BodyValueToString(body, "price")
-	description_ := tools.BodyValueToString(body, "description")
-	validated_ := tools.BodyValueToString(body, "validated")
 	housing_ := tools.BodyValueToString(body, "housing")
 	
 
@@ -214,16 +209,6 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 			return
 		}
-	}
-
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, nbPlaces_, price_, description_, validated_) {
-		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, nbPlaces_, price_, description_, validated_) {
-		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
-		return
 	}
 
     if !tools.ValueIsEmpty(housing_) {

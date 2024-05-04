@@ -13,9 +13,17 @@ func Equipment(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		EquipmentGet(w, r, db)
 	case "PUT":
-		EquipmentPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+			EquipmentPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		EquipmentDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.GetElement(db, "EQUIPMENT", "housing", "uuid", tools.ReadQuery(r)["uuid"])) {
+			EquipmentDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,7 +37,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `name`, `description`, `price`, `equipment_type`) {
+	if tools.ValuesNotInBody(body, `name`, `description`, `price`, `number`, `equipment_type`, `housing`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -37,39 +45,37 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     name_ := tools.BodyValueToString(body, "name")
 	description_ := tools.BodyValueToString(body, "description")
 	price_ := tools.BodyValueToString(body, "price")
+	number_ := tools.BodyValueToString(body, "number")
 	equipment_type_ := tools.BodyValueToString(body, "equipment_type")
-	
+	housing_ := tools.BodyValueToString(body, "housing")
+
+	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) {
+		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		return
+	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name_, description_, price_) {
+	if tools.ValueIsEmpty(name_, description_, price_, number_, equipment_type_, housing_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, name_, description_, price_) {
+	if tools.ValueTooShort(4, name_, description_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, name_, description_, price_) {
+	if tools.ValueTooLong(32, name_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-    if !tools.ValueIsEmpty(equipment_type_) {
-		if !tools.ElementExists(db, "EQUIPMENT_TYPE", "uuid", equipment_type_) {
-			tools.JsonResponse(w, 400, `{"error": "This equipment_type does not exist"}`) 
-			return
-		}
+	if !tools.ElementExists(db, "EQUIPMENT_TYPE", "uuid", equipment_type_) {
+		tools.JsonResponse(w, 400, `{"error": "This equipment_type does not exist"}`) 
+		return
 	}
-	
-	
-	
-
-	
-
-	if tools.ElementExists(db, "EQUIPMENT", "name", name_) {
-		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
+	if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`)
 		return
 	}
 	
@@ -77,7 +83,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Equipment in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `EQUIPMENT` (`uuid`, `name`, `description`, `price`, `equipment_type`) VALUES (?, ?, ?, ?, ?)", uuid_, name_, description_, price_, equipment_type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `EQUIPMENT` (`uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, name_, description_, price_, number_, equipment_type_, housing_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -109,12 +115,12 @@ func EquipmentGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `description`, `price`, `equipment_type`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `name`, `description`, `price`, `equipment_type` FROM `EQUIPMENT`"
+	request := "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing` FROM `EQUIPMENT`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `EQUIPMENT`"
 	var countParams []interface{}
@@ -190,7 +196,7 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `equipment_type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `number`, `housing`, `equipment_type`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -199,8 +205,8 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
     name_ := tools.BodyValueToString(body, "name")
 	description_ := tools.BodyValueToString(body, "description")
-	price_ := tools.BodyValueToString(body, "price")
 	equipment_type_ := tools.BodyValueToString(body, "equipment_type")
+	housing_ := tools.BodyValueToString(body, "housing")
 	
 
 	// Checking if the values are empty
@@ -219,11 +225,11 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, name_, description_, price_) {
+	if tools.ValueTooShort(4, name_, description_) {
 		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, name_, description_, price_) {
+	if tools.ValueTooLong(32, name_, description_) {
 		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
@@ -234,19 +240,18 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 	}
+	if !tools.ValueIsEmpty(housing_) {
+		if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
+			tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`)
+			return
+		}
+	}
 	
 
 	if !tools.ElementExists(db, "EQUIPMENT", "uuid", uuid_) {
 		tools.JsonResponse(w, 400, `{"error": "This Equipment does not exist"}`) 
 		return
 	}
-	if tools.ElementExists(db, "EQUIPMENT", "name", name_) {
-		tools.JsonResponse(w, 400, `{"error": "This name already exists"}`) 
-		return
-	}
-	
-
-	
 
     
 
@@ -333,7 +338,7 @@ func EquipmentDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func EquipmentGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `description`, `price`, `equipment_type` FROM `EQUIPMENT` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing` FROM `EQUIPMENT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -343,18 +348,18 @@ func EquipmentGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error)
 }
 
 func EquipmentGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, name_, description_, price_, equipment_type_ string
+	var uuid_, name_, description_, price_, number_, equipment_type_, housing_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &description_, &price_, &equipment_type_)
+			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "equipment_type": "` + equipment_type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -363,11 +368,11 @@ func EquipmentGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, err
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &description_, &price_, &equipment_type_)
+			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "equipment_type": "` + equipment_type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `"`, nil
 	}
 }

@@ -13,9 +13,17 @@ func Housing(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		HousingGet(w, r, db)
 	case "PUT":
-		HousingPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+			HousingPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		}
 	case "DELETE":
-		HousingDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+			HousingDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,46 +37,59 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`) {
+	if tools.ValuesNotInBody(body, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     surface_ := tools.BodyValueToString(body, "surface")
 	price_ := tools.BodyValueToString(body, "price")
-	validated_ := tools.BodyValueToString(body, "validated")
 	street_nb_ := tools.BodyValueToString(body, "street_nb")
 	city_ := tools.BodyValueToString(body, "city")
 	zip_code_ := tools.BodyValueToString(body, "zip_code")
 	street_ := tools.BodyValueToString(body, "street")
 	description_ := tools.BodyValueToString(body, "description")
 	house_type_ := tools.BodyValueToString(body, "house_type")
-	
+	account_ := tools.BodyValueToString(body, "account")
+
+	if tools.GetUUID(r, db) != account_ {
+		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		return
+	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_) {
+	if tools.ValueIsEmpty(surface_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_) {
+	if tools.ValueTooShort(4, description_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
+
+	if !tools.ElementExists(db, "HOUSE_TYPE", "uuid", house_type_) {
+		tools.JsonResponse(w, 400, `{"error": "This house_type does not exist"}`) 
+		return
+	}
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 		return
 	}
 
-    if !tools.ValueIsEmpty(house_type_) {
-		if !tools.ElementExists(db, "HOUSE_TYPE", "uuid", house_type_) {
-			tools.JsonResponse(w, 400, `{"error": "This house_type does not exist"}`) 
-			return
+	if tools.ElementExists(db, "HOUSING", "account", account_) {
+		if tools.ElementExists(db, "HOUSING", "surface", surface_) {
+			if tools.ElementExists(db, "HOUSING", "street_nb", street_nb_) {
+				if tools.ElementExists(db, "HOUSING", "zip_code", zip_code_) {
+					if tools.ElementExists(db, "HOUSING", "city", city_) {
+						tools.JsonResponse(w, 400, `{"error": "This housing already exists"}`)
+						return
+					}
+				}
+			}
 		}
 	}
-	
-	
 	
 
 	
@@ -78,7 +99,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Housing in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_, house_type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, surface_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -110,12 +131,12 @@ func HousingGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type` FROM `HOUSING`"
+	request := "SELECT `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account` FROM `HOUSING`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `HOUSING`"
 	var countParams []interface{}
@@ -191,22 +212,17 @@ func HousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
 	uuid_ := query["uuid"]
 	
-    surface_ := tools.BodyValueToString(body, "surface")
-	price_ := tools.BodyValueToString(body, "price")
-	validated_ := tools.BodyValueToString(body, "validated")
-	street_nb_ := tools.BodyValueToString(body, "street_nb")
-	city_ := tools.BodyValueToString(body, "city")
-	zip_code_ := tools.BodyValueToString(body, "zip_code")
-	street_ := tools.BodyValueToString(body, "street")
+    
 	description_ := tools.BodyValueToString(body, "description")
 	house_type_ := tools.BodyValueToString(body, "house_type")
+	account_ := tools.BodyValueToString(body, "account")
 	
 
 	// Checking if the values are empty
@@ -225,18 +241,20 @@ func HousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_) {
+	if tools.ValueTooShort(4, description_) {
 		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_) {
-		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
     if !tools.ValueIsEmpty(house_type_) {
 		if !tools.ElementExists(db, "HOUSE_TYPE", "uuid", house_type_) {
 			tools.JsonResponse(w, 400, `{"error": "This house_type does not exist"}`) 
+			return
+		}
+	}
+	if !tools.ValueIsEmpty(account_) {
+		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 			return
 		}
 	}
@@ -335,7 +353,7 @@ func HousingDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func HousingGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type` FROM `HOUSING` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account` FROM `HOUSING` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -345,18 +363,18 @@ func HousingGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
 }
 
 func HousingGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_, house_type_ string
+	var uuid_, surface_, price_, validated_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &surface_, &price_, &validated_, &street_nb_, &city_, &zip_code_, &street_, &description_, &house_type_)
+			err := result.Scan(&uuid_, &surface_, &price_, &validated_, &street_nb_, &city_, &zip_code_, &street_, &description_, &house_type_, &account_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "surface": "` + surface_ + `", "price": "` + price_ + `", "validated": "` + validated_ + `", "street_nb": "` + street_nb_ + `", "city": "` + city_ + `", "zip_code": "` + zip_code_ + `", "street": "` + street_ + `", "description": "` + description_ + `", "house_type": "` + house_type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "surface": "` + surface_ + `", "price": "` + price_ + `", "validated": "` + validated_ + `", "street_nb": "` + street_nb_ + `", "city": "` + city_ + `", "zip_code": "` + zip_code_ + `", "street": "` + street_ + `", "description": "` + description_ + `", "house_type": "` + house_type_ + `", "account": "` + account_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -365,11 +383,11 @@ func HousingGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &surface_, &price_, &validated_, &street_nb_, &city_, &zip_code_, &street_, &description_, &house_type_)
+			err := result.Scan(&uuid_, &surface_, &price_, &validated_, &street_nb_, &city_, &zip_code_, &street_, &description_, &house_type_, &account_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "surface": "` + surface_ + `", "price": "` + price_ + `", "validated": "` + validated_ + `", "street_nb": "` + street_nb_ + `", "city": "` + city_ + `", "zip_code": "` + zip_code_ + `", "street": "` + street_ + `", "description": "` + description_ + `", "house_type": "` + house_type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "surface": "` + surface_ + `", "price": "` + price_ + `", "validated": "` + validated_ + `", "street_nb": "` + street_nb_ + `", "city": "` + city_ + `", "zip_code": "` + zip_code_ + `", "street": "` + street_ + `", "description": "` + description_ + `", "house_type": "` + house_type_ + `", "account": "` + account_ + `"`, nil
 	}
 }

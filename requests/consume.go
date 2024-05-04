@@ -13,9 +13,17 @@ func Consume(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		ConsumeGet(w, r, db)
 	case "PUT":
-		ConsumePut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) {
+			ConsumePut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		ConsumeDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "CONSUME", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) || tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "ACCOUNT_SERVICES", "account", "services", tools.ReadQuery(r)["services"], "account", tools.ReadQuery(r)["account"]) {
+			ConsumeDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,49 +37,51 @@ func ConsumePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `report`, `notice`, `price`, `note`, `services`, `account`) {
+	if tools.ValuesNotInBody(body, `report`, `notice`, `note`, `services`, `account`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     report_ := tools.BodyValueToString(body, "report")
 	notice_ := tools.BodyValueToString(body, "notice")
-	price_ := tools.BodyValueToString(body, "price")
 	note_ := tools.BodyValueToString(body, "note")
 	services_ := tools.BodyValueToString(body, "services")
 	account_ := tools.BodyValueToString(body, "account")
 	
+	if tools.GetUUID(r, db) != account_ {
+		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		return
+	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(report_, notice_, price_, note_) {
+	if tools.ValueIsEmpty(report_, notice_, note_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, report_, notice_, price_, note_) {
+	if tools.ValueTooShort(4, report_, notice_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, report_, notice_, price_, note_) {
+	if tools.ValueTooLong(32, report_, notice_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
 
-    if !tools.ValueIsEmpty(account_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
-			return
-		}
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
+		return
 	}
-	if !tools.ValueIsEmpty(services_) {
-		if !tools.ElementExists(db, "SERVICES", "uuid", services_) {
-			tools.JsonResponse(w, 400, `{"error": "This services does not exist"}`) 
-			return
-		}
+	if !tools.ElementExists(db, "SERVICES", "uuid", services_) {
+		tools.JsonResponse(w, 400, `{"error": "This services does not exist"}`) 
+		return
 	}
-	
-	
+
+	if tools.ElementExistsInLinkTable(db, "CONSUME", "account", account_, "services", services_) {
+		tools.JsonResponse(w, 400, `{"error": "This Consume already exists"}`)
+		return
+	}
 	
 
 	
@@ -81,7 +91,7 @@ func ConsumePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	// Inserting the Consume in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `CONSUME` (`account`, `services`, `report`, `notice`, `price`, `note`, `services`, `account`) VALUES (?, ?, ?, ?, ?, ?)", account_, services_, report_, notice_, price_, note_, services_, account_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `CONSUME` (`account`, `services`, `report`, `notice`, `note`) VALUES (?, ?, ?, ?, ?)", account_, services_, report_, notice_, note_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -113,12 +123,12 @@ func ConsumeGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `report`, `notice`, `price`, `note`, `services`, `account`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `report`, `notice`, `note`, `services`, `account`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `report`, `notice`, `price`, `note`, `services`, `account` FROM `CONSUME`"
+	request := "SELECT `report`, `notice`, `note`, `services`, `account` FROM `CONSUME`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `CONSUME`"
 	var countParams []interface{}
@@ -194,7 +204,7 @@ func ConsumePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `report`, `notice`, `price`, `note`) || tools.ValuesNotInQuery(query, `account`, `services`) {
+	if tools.AtLeastOneValueInBody(body, `report`, `notice`, `note`) || tools.ValuesNotInQuery(query, `account`, `services`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -204,8 +214,6 @@ func ConsumePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
     report_ := tools.BodyValueToString(body, "report")
 	notice_ := tools.BodyValueToString(body, "notice")
-	price_ := tools.BodyValueToString(body, "price")
-	note_ := tools.BodyValueToString(body, "note")
 	
 
 	// Checking if the values are empty
@@ -224,11 +232,11 @@ func ConsumePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, report_, notice_, price_, note_) {
+	if tools.ValueTooShort(4, report_, notice_) {
 		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, report_, notice_, price_, note_) {
+	if tools.ValueTooLong(32, report_, notice_) {
 		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
@@ -247,11 +255,7 @@ func ConsumePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	if !tools.ElementExists(db, "CONSUME", "account", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This Consume does not exist"}`) 
-		return
-	}
-	if !tools.ElementExists(db, "CONSUME", "services", services_) {
+	if !tools.ElementExistsInLinkTable(db, "CONSUME", "account", account_, "services", services_) {
 		tools.JsonResponse(w, 400, `{"error": "This Consume does not exist"}`) 
 		return
 	}
@@ -322,17 +326,23 @@ func ConsumeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	if !tools.ElementExists(db, "CONSUME", "account", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This Consume does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 		return
 	}
+
 	if !tools.ElementExists(db, "CONSUME", "services", services_) {
-		tools.JsonResponse(w, 400, `{"error": "This Consume does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This services does not exist"}`)
+		return
+	}
+
+	if !tools.ElementExistsInLinkTable(db, "CONSUME", "account", account_, "services", services_) {
+		tools.JsonResponse(w, 400, `{"error": "This Consume does not exist"}`)
 		return
 	}
 	
 
 	// Deleting the Consume in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `CONSUME` WHERE account = ?, services = ?", account_, services_)
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `CONSUME` WHERE account = ? AND services = ?", account_, services_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -349,7 +359,7 @@ func ConsumeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func ConsumeGetAll(db *sql.DB, account_ string, services_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `report`, `notice`, `price`, `note`, `services`, `account` FROM `CONSUME` WHERE account = ?, services = ?", account_, services_)
+	result, err := tools.ExecuteQuery(db, "SELECT `report`, `notice`, `note`, `services`, `account` FROM `CONSUME` WHERE account = ? AND services = ?", account_, services_)
 	if err != nil {
 		return "", err
 	}
@@ -359,18 +369,18 @@ func ConsumeGetAll(db *sql.DB, account_ string, services_ string, arrayOutput bo
 }
 
 func ConsumeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var report_, notice_, price_, note_, services_, account_ string
+	var report_, notice_, note_, services_, account_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&report_, &notice_, &price_, &note_, &services_, &account_)
+			err := result.Scan(&report_, &notice_, &note_, &services_, &account_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"report": "` + report_ + `", "notice": "` + notice_ + `", "price": "` + price_ + `", "note": "` + note_ + `", "services": "` + services_ + `", "account": "` + account_ + `"},`
+			jsonResponse += `{"report": "` + report_ + `", "notice": "` + notice_ + `", "price": "` + note_ + `", "services": "` + services_ + `", "account": "` + account_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -379,11 +389,11 @@ func ConsumeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&report_, &notice_, &price_, &note_, &services_, &account_)
+			err := result.Scan(&report_, &notice_, &note_, &services_, &account_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"report": "` + report_ + `", "notice": "` + notice_ + `", "price": "` + price_ + `", "note": "` + note_ + `", "services": "` + services_ + `", "account": "` + account_ + `"`, nil
+		return `"report": "` + report_ + `", "notice": "` + notice_ + `", "price": "` + note_ + `", "services": "` + services_ + `", "account": "` + account_ + `"`, nil
 	}
 }

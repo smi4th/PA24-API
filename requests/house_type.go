@@ -9,13 +9,25 @@ import (
 func HouseType(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		HouseTypePost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			HouseTypePost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "GET":
 		HouseTypeGet(w, r, db)
 	case "PUT":
-		HouseTypePut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			HouseTypePut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "DELETE":
-		HouseTypeDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			HouseTypeDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}

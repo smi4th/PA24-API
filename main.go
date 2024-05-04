@@ -37,12 +37,6 @@ func main() {
 		}
 
 		switch r.URL.Path {
-		case "/account_bedroom":
-			requests.AccountBedroom(w, r, db)
-		case "/account_housing":
-			requests.AccountHousing(w, r, db)
-		case "/account_services":
-			requests.AccountServices(w, r, db)
 		case "/account_subscription":
 			requests.AccountSubscription(w, r, db)
 		case "/account_type":
@@ -53,8 +47,6 @@ func main() {
 			requests.BedRoom(w, r, db)
 		case "/consume":
 			requests.Consume(w, r, db)
-		case "/disponibility_account":
-			requests.DisponibilityAccount(w, r, db)
 		case "/disponibility":
 			requests.Disponibility(w, r, db)
 		case "/equipment_type":
@@ -63,17 +55,13 @@ func main() {
 			requests.Equipment(w, r, db)
 		case "/house_type":
 			requests.HouseType(w, r, db)
-		case "/housing_equipment":
-			requests.HousingEquipment(w, r, db)
 		case "/housing":
 			requests.Housing(w, r, db)
 		case "/message":
 			requests.Message(w, r, db)
-		case "/provider_account":
-			requests.ProviderAccount(w, r, db)
 		case "/provider":
 			requests.Provider(w, r, db)
-		case "/reservation_berdroom":
+		case "/reservation_bedroom":
 			requests.ReservationBedroom(w, r, db)
 		case "/reservation_housing":
 			requests.ReservationHousing(w, r, db)

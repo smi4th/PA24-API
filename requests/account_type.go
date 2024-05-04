@@ -9,13 +9,25 @@ import (
 func AccountType(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		AccountTypePost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			AccountTypePost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "GET":
 		AccountTypeGet(w, r, db)
 	case "PUT":
-		AccountTypePut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			AccountTypePut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "DELETE":
-		AccountTypeDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			AccountTypeDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}

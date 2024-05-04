@@ -9,13 +9,25 @@ import (
 func ServicesTypes(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		ServicesTypesPost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ServicesTypesPost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "GET":
 		ServicesTypesGet(w, r, db)
 	case "PUT":
-		ServicesTypesPut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ServicesTypesPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "DELETE":
-		ServicesTypesDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ServicesTypesDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}

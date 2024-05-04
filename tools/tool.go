@@ -265,6 +265,99 @@ func IsAuthenticated(r *http.Request, db *sql.DB) bool {
 	return ElementExists(db, "account", "token", strings.Replace(token, "Bearer ", "", 1))
 }
 
+func IsAdmin(r *http.Request, db *sql.DB) bool {
+	uuid := GetUUID(r, db)
+	request := "SELECT `admin` FROM `ACCOUNT_TYPE` WHERE `uuid` = (SELECT `account_type` FROM `ACCOUNT` WHERE `uuid` = ?)"
+	rows, err := ExecuteQuery(db, request, uuid)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var admin string
+		err := rows.Scan(&admin)
+		if err != nil {
+			ErrorLog(err.Error())
+			return false
+		}
+		return admin == "true"
+	}
+
+	return false
+}
+
+func GetElement(db *sql.DB, table string, attribute string, idAttribute string, idValue string) string {
+	// Execute the query to get the element from the specified table and attribute.
+	rows, err := ExecuteQuery(db, "SELECT `" + attribute + "` FROM `" + table + "` WHERE `" + idAttribute + "` = ?", idValue)
+	if err != nil {
+		ErrorLog(err.Error())
+		return ""
+	}
+	defer rows.Close()
+
+	// Check if the element exists.
+	if rows.Next() {
+		var element string
+		err := rows.Scan(&element)
+		if err != nil {
+			ErrorLog(err.Error())
+			return ""
+		}
+		return element
+	}
+
+	return ""
+
+}
+
+func GetElementFromLinkTable(db *sql.DB, table string, attribute string, idAttribute1 string, idValue1 string, idAttribute2 string, idValue2 string) string {
+	// Execute the query to get the element from the specified table and attribute.
+	rows, err := ExecuteQuery(db, "SELECT `" + attribute + "` FROM `" + table + "` WHERE `" + idAttribute1 + "` = ? AND `" + idAttribute2 + "` = ?", idValue1, idValue2)
+	if err != nil {
+		ErrorLog(err.Error())
+		return ""
+	}
+	defer rows.Close()
+
+	// Check if the element exists.
+	if rows.Next() {
+		var element string
+		err := rows.Scan(&element)
+		if err != nil {
+			ErrorLog(err.Error())
+			return ""
+		}
+		return element
+	}
+
+	return ""
+
+}
+
+func GetUUID(r *http.Request, db *sql.DB) string {
+	token := strings.Replace(r.Header.Get("Authorization"), "Bearer ", "", 1)
+	rows, err := ExecuteQuery(db, "SELECT `uuid` FROM `ACCOUNT` WHERE `token` = ?", token)
+	if err != nil {
+		ErrorLog(err.Error())
+		return ""
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var uuid string
+		err := rows.Scan(&uuid)
+		if err != nil {
+			ErrorLog(err.Error())
+			return ""
+		}
+		return uuid
+	}
+
+	return ""
+}
+
 /*
 #######################################
 ########## Database Functions #########
@@ -544,6 +637,7 @@ func ValueInArray(value string, array ...string) bool {
 
 func ElementExists(db *sql.DB, table string, attribute string, value string) bool {
 	// Execute the query to count occurrences of the value in the specified table and attribute.
+	InfoLog("Testing if " + value + " exists in " + table + "." + attribute)
 	result, err := ExecuteQuery(db , "SELECT COUNT(`" + attribute + "`) as `count` FROM `" + table + "` WHERE `" + attribute + "` = ?", value)
 	if err != nil {
 		ErrorLog(err.Error())
@@ -559,6 +653,9 @@ func ElementExists(db *sql.DB, table string, attribute string, value string) boo
 			ErrorLog(err.Error())
 			return false
 		}
+
+		InfoLog("Count: " + strconv.Itoa(count))
+
 		return count > 0
 	}
 

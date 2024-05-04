@@ -9,13 +9,25 @@ import (
 func Subscription(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		SubscriptionPost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			SubscriptionPost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "GET":
 		SubscriptionGet(w, r, db)
 	case "PUT":
-		SubscriptionPut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			SubscriptionPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "DELETE":
-		SubscriptionDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			SubscriptionDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,12 +41,17 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `name`) {
+	if tools.ValuesNotInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     name_ := tools.BodyValueToString(body, "name")
+	price_ := tools.BodyValueToString(body, "price")
+	ads_ := tools.BodyValueToString(body, "ads")
+	VIP_ := tools.BodyValueToString(body, "VIP")
+	description_ := tools.BodyValueToString(body, "description")
+	duration_ := tools.BodyValueToString(body, "duration")
 	
 
 	// Checking if the values are empty
@@ -44,7 +61,7 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, name_) {
+	if tools.ValueTooShort(4, name_, description_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
@@ -52,9 +69,6 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
 		return
 	}
-
-    
-	
 	
 
 	
@@ -68,7 +82,7 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Subscription in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`uuid`, `name`) VALUES (?, ?)", uuid_, name_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, name_, price_, ads_, VIP_, description_, duration_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -100,12 +114,12 @@ func SubscriptionGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `name` FROM `SUBSCRIPTION`"
+	request := "SELECT `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration` FROM `SUBSCRIPTION`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `SUBSCRIPTION`"
 	var countParams []interface{}
@@ -181,7 +195,7 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -215,7 +229,6 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
-
     
 
 	if !tools.ElementExists(db, "SUBSCRIPTION", "uuid", uuid_) {
@@ -315,7 +328,7 @@ func SubscriptionDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func SubscriptionGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name` FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration` FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -325,18 +338,18 @@ func SubscriptionGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, err
 }
 
 func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, name_ string
+	var uuid_, name_, price_, ads_, VIP_, description_, duration_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_)
+			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -345,11 +358,11 @@ func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, 
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_)
+			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `"`, nil
 	}
 }

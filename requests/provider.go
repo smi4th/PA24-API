@@ -9,13 +9,25 @@ import (
 func Provider(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		ProviderPost(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ProviderPost(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "GET":
 		ProviderGet(w, r, db)
 	case "PUT":
-		ProviderPut(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ProviderPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	case "DELETE":
-		ProviderDelete(w, r, db)
+		if tools.IsAdmin(r, db) {
+			ProviderDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}

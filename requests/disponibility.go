@@ -13,9 +13,17 @@ func Disponibility(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		DisponibilityGet(w, r, db)
 	case "PUT":
-		DisponibilityPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+			DisponibilityPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		DisponibilityDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "DISPONIBILITY", "account", "uuid", tools.ReadQuery(r)["uuid"]) {
+			DisponibilityDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,13 +37,19 @@ func DisponibilityPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `start_date`, `end_date`) {
+	if tools.ValuesNotInBody(body, `start_date`, `end_date`, `account`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     start_date_ := tools.BodyValueToString(body, "start_date")
 	end_date_ := tools.BodyValueToString(body, "end_date")
+	account_ := tools.BodyValueToString(body, "account")
+
+	if tools.GetUUID(r, db) != account_ {
+		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+		return
+	}
 	
 
 	// Checking if the values are empty
@@ -44,20 +58,10 @@ func DisponibilityPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, start_date_, end_date_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 		return
 	}
-	if tools.ValueTooLong(32, start_date_, end_date_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
-		return
-	}
-
-    
-	
-	
-
 	
 
 	
@@ -65,7 +69,7 @@ func DisponibilityPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Disponibility in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `DISPONIBILITY` (`uuid`, `start_date`, `end_date`) VALUES (?, ?, ?)", uuid_, start_date_, end_date_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `DISPONIBILITY` (`uuid`, `start_date`, `end_date`, `account`) VALUES (?, ?, ?, ?)", uuid_, start_date_, end_date_, account_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -97,12 +101,12 @@ func DisponibilityGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `start_date`, `end_date`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `start_date`, `end_date`, `account`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `start_date`, `end_date` FROM `DISPONIBILITY`"
+	request := "SELECT `uuid`, `start_date`, `end_date`, `account` FROM `DISPONIBILITY`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `DISPONIBILITY`"
 	var countParams []interface{}
@@ -185,9 +189,6 @@ func DisponibilityPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	uuid_ := query["uuid"]
 	
-    start_date_ := tools.BodyValueToString(body, "start_date")
-	end_date_ := tools.BodyValueToString(body, "end_date")
-	
 
 	// Checking if the values are empty
 	if tools.ValueIsEmpty(uuid_) {
@@ -204,24 +205,12 @@ func DisponibilityPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, start_date_, end_date_) {
-		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, start_date_, end_date_) {
-		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
-		return
-	}
-
     
 
 	if !tools.ElementExists(db, "DISPONIBILITY", "uuid", uuid_) {
 		tools.JsonResponse(w, 400, `{"error": "This Disponibility does not exist"}`) 
 		return
 	}
-	
-
 	
 
     
@@ -309,7 +298,7 @@ func DisponibilityDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func DisponibilityGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `start_date`, `end_date` FROM `DISPONIBILITY` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `start_date`, `end_date`, `account` FROM `DISPONIBILITY` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -319,18 +308,18 @@ func DisponibilityGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, er
 }
 
 func DisponibilityGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, start_date_, end_date_ string
+	var uuid_, start_date_, end_date_, account_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &start_date_, &end_date_)
+			err := result.Scan(&uuid_, &start_date_, &end_date_, &account_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "start_date": "` + start_date_ + `", "end_date": "` + end_date_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "start_date": "` + start_date_ + `", "end_date": "` + end_date_ + `", "account": "` + account_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -339,11 +328,11 @@ func DisponibilityGetAllAssociation(result *sql.Rows, arrayOutput bool) (string,
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &start_date_, &end_date_)
+			err := result.Scan(&uuid_, &start_date_, &end_date_, &account_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "start_date": "` + start_date_ + `", "end_date": "` + end_date_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "start_date": "` + start_date_ + `", "end_date": "` + end_date_ + `", "account": "` + account_ + `"`, nil
 	}
 }

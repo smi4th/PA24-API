@@ -13,9 +13,17 @@ func ReservationHousing(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		ReservationHousingGet(w, r, db)
 	case "PUT":
-		ReservationHousingPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) {
+			ReservationHousingPut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		ReservationHousingDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "RESERVATION_HOUSING", "account", "account", tools.ReadQuery(r)["account"], "housing", tools.ReadQuery(r)["housing"]) {
+			ReservationHousingDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,49 +37,54 @@ func ReservationHousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `start_time`, `end_time`, `price`, `review`, `review_note`, `account`, `housing`) {
+	if tools.ValuesNotInBody(body, `start_time`, `end_time`, `account`, `housing`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     start_time_ := tools.BodyValueToString(body, "start_time")
 	end_time_ := tools.BodyValueToString(body, "end_time")
-	price_ := tools.BodyValueToString(body, "price")
-	review_ := tools.BodyValueToString(body, "review")
-	review_note_ := tools.BodyValueToString(body, "review_note")
+	review_ := "None"
+	review_note_ := "0"
 	account_ := tools.BodyValueToString(body, "account")
 	housing_ := tools.BodyValueToString(body, "housing")
+
+	if tools.GetUUID(r, db) != account_ {
+		tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		return
+	}
+
+	if tools.GetUUID(r, db) == tools.GetElement(db, "HOUSING", "account", "uuid", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "You cannot reserve your own housing"}`)
+		return
+	}
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(start_time_, end_time_, price_, review_, review_note_) {
+	if tools.ValueIsEmpty(start_time_, end_time_, review_, review_note_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, start_time_, end_time_, price_, review_, review_note_) {
+	if tools.ValueTooShort(4, review_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
-	if tools.ValueTooLong(32, start_time_, end_time_, price_, review_, review_note_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
+
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
 		return
 	}
-
-    if !tools.ValueIsEmpty(account_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
-			return
-		}
-	}
-	if !tools.ValueIsEmpty(housing_) {
-		if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
-			tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`) 
-			return
-		}
+	if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`) 
+		return
 	}
 	
+	if tools.ElementExistsInLinkTable(db, "RESERVATION_HOUSING", "account", account_, "housing", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing already exists"}`)
+		return
+	}
 	
 	
 
@@ -82,7 +95,7 @@ func ReservationHousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	
 
 	// Inserting the ReservationHousing in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `RESERVATION_HOUSING` (`account`, `housing`, `start_time`, `end_time`, `price`, `review`, `review_note`, `account`, `housing`) VALUES (?, ?, ?, ?, ?, ?, ?)", account_, housing_, start_time_, end_time_, price_, review_, review_note_, account_, housing_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `RESERVATION_HOUSING` (`start_time`, `end_time`, `review`, `review_note`, `account`, `housing`) VALUES (?, ?, ?, ?, ?, ?)", start_time_, end_time_, review_, review_note_, account_, housing_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -114,12 +127,12 @@ func ReservationHousingGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `start_time`, `end_time`, `price`, `review`, `review_note`, `account`, `housing`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `start_time`, `end_time`, `review`, `review_note`, `account`, `housing`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `start_time`, `end_time`, `price`, `review`, `review_note`, `account`, `housing` FROM `RESERVATION_HOUSING`"
+	request := "SELECT `start_time`, `end_time`, `review`, `review_note`, `account`, `housing` FROM `RESERVATION_HOUSING`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `RESERVATION_HOUSING`"
 	var countParams []interface{}
@@ -195,7 +208,7 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `start_time`, `end_time`, `price`, `review`, `review_note`) || tools.ValuesNotInQuery(query, `account`, `housing`) {
+	if tools.AtLeastOneValueInBody(body, `start_time`, `end_time`, `review`, `review_note`) || tools.ValuesNotInQuery(query, `account`, `housing`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -203,11 +216,7 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	account_ := query["account"]
 	housing_ := query["housing"]
 	
-    start_time_ := tools.BodyValueToString(body, "start_time")
-	end_time_ := tools.BodyValueToString(body, "end_time")
-	price_ := tools.BodyValueToString(body, "price")
 	review_ := tools.BodyValueToString(body, "review")
-	review_note_ := tools.BodyValueToString(body, "review_note")
 	
 
 	// Checking if the values are empty
@@ -226,12 +235,8 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, start_time_, end_time_, price_, review_, review_note_) {
+	if tools.ValueTooShort(4, review_) {
 		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, start_time_, end_time_, price_, review_, review_note_) {
-		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
 		return
 	}
 
@@ -249,12 +254,8 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	
 
-	if !tools.ElementExists(db, "RESERVATION_HOUSING", "account", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`) 
-		return
-	}
-	if !tools.ElementExists(db, "RESERVATION_HOUSING", "housing", housing_) {
-		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`) 
+	if !tools.ElementExistsInLinkTable(db, "RESERVATION_HOUSING", "account", account_, "housing", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`)
 		return
 	}
 	
@@ -278,7 +279,7 @@ func ReservationHousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Removing the last ","
 	request = request[:len(request)-2]
 
-	request += " WHERE account = ?, housing = ?"
+	request += " WHERE account = ? AND housing = ?"
 	params = append(params, account_, housing_)
 
 	// Updating the account in the database
@@ -324,17 +325,23 @@ func ReservationHousingDelete(w http.ResponseWriter, r *http.Request, db *sql.DB
 	
 
 	if !tools.ElementExists(db, "RESERVATION_HOUSING", "account", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 		return
 	}
+
 	if !tools.ElementExists(db, "RESERVATION_HOUSING", "housing", housing_) {
-		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`)
+		return
+	}
+
+	if !tools.ElementExistsInLinkTable(db, "RESERVATION_HOUSING", "account", account_, "housing", housing_) {
+		tools.JsonResponse(w, 400, `{"error": "This ReservationHousing does not exist"}`)
 		return
 	}
 	
 
 	// Deleting the ReservationHousing in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `RESERVATION_HOUSING` WHERE account = ?, housing = ?", account_, housing_)
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `RESERVATION_HOUSING` WHERE account = ? AND housing = ?", account_, housing_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -351,7 +358,7 @@ func ReservationHousingDelete(w http.ResponseWriter, r *http.Request, db *sql.DB
 }
 
 func ReservationHousingGetAll(db *sql.DB, account_ string, housing_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `start_time`, `end_time`, `price`, `review`, `review_note`, `account`, `housing` FROM `RESERVATION_HOUSING` WHERE account = ?, housing = ?", account_, housing_)
+	result, err := tools.ExecuteQuery(db, "SELECT `start_time`, `end_time`, `review`, `review_note`, `account`, `housing` FROM `RESERVATION_HOUSING` WHERE account = ? AND housing = ?", account_, housing_)
 	if err != nil {
 		return "", err
 	}
@@ -361,18 +368,18 @@ func ReservationHousingGetAll(db *sql.DB, account_ string, housing_ string, arra
 }
 
 func ReservationHousingGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var start_time_, end_time_, price_, review_, review_note_, account_, housing_ string
+	var start_time_, end_time_, review_, review_note_, account_, housing_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&start_time_, &end_time_, &price_, &review_, &review_note_, &account_, &housing_)
+			err := result.Scan(&start_time_, &end_time_, &review_, &review_note_, &account_, &housing_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "price": "` + price_ + `", "review": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"},`
+			jsonResponse += `{"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "price": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -381,11 +388,11 @@ func ReservationHousingGetAllAssociation(result *sql.Rows, arrayOutput bool) (st
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&start_time_, &end_time_, &price_, &review_, &review_note_, &account_, &housing_)
+			err := result.Scan(&start_time_, &end_time_, &review_, &review_note_, &account_, &housing_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "price": "` + price_ + `", "review": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"`, nil
+		return `"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "review": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"`, nil
 	}
 }

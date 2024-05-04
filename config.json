@@ -13,7 +13,8 @@
             "error",
             "request",
             "response",
-            "info"
+            "info",
+            "sql"
         ]
     }
 }

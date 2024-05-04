@@ -13,9 +13,17 @@ func Message(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	case "GET":
 		MessageGet(w, r, db)
 	case "PUT":
-		MessagePut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) {
+			MessagePut(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	case "DELETE":
-		MessageDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElementFromLinkTable(db, "MESSAGE", "author", "uuid", tools.ReadQuery(r)["uuid"], "author",  tools.ReadQuery(r)["author"]) {
+			MessageDelete(w, r, db)
+		} else {
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
@@ -29,59 +37,42 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `uuid`, `creation_date`, `content`, `note`, `account`, `author`) {
+	if tools.ValuesNotInBody(body, `content`, `account`, `author`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-    uuid_ := tools.BodyValueToString(body, "uuid")
-	creation_date_ := tools.BodyValueToString(body, "creation_date")
 	content_ := tools.BodyValueToString(body, "content")
-	note_ := tools.BodyValueToString(body, "note")
 	account_ := tools.BodyValueToString(body, "account")
 	author_ := tools.BodyValueToString(body, "author")
 	
+	if tools.GetUUID(r, db) != author_ {
+		tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
+		return
+	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(uuid_, creation_date_, content_, note_) {
+	if tools.ValueIsEmpty(content_, account_, author_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, uuid_, creation_date_, content_, note_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
 		return
 	}
-	if tools.ValueTooLong(32, uuid_, creation_date_, content_, note_) {
-		tools.JsonResponse(w, 400, `{"message": "Fields too long"}`)
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", author_) {
+		tools.JsonResponse(w, 400, `{"error": "This author does not exist"}`) 
 		return
 	}
-
-    if !tools.ValueIsEmpty(account_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
-			return
-		}
-	}
-	if !tools.ValueIsEmpty(author_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", author_) {
-			tools.JsonResponse(w, 400, `{"error": "This author does not exist"}`) 
-			return
-		}
-	}
-	
-	
 	
 
 	
-
-	
-
+	uuid_ := tools.GenerateUUID()
 	
 
 	// Inserting the Message in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `MESSAGE` (`account`, `author`, `uuid`, `uuid`, `creation_date`, `content`, `note`, `account`, `author`) VALUES (?, ?, ?, ?, ?, ?)", account_, author_, uuid_, uuid_, creation_date_, content_, note_, account_, author_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `MESSAGE` (`uuid`, `content`, `account`, `author`) VALUES (?, ?, ?, ?)", uuid_, content_, account_, author_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -113,12 +104,12 @@ func MessageGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `creation_date`, `content`, `note`, `account`, `author`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `creation_date`, `content`, `account`, `author`, "all") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `creation_date`, `content`, `note`, `account`, `author` FROM `MESSAGE`"
+	request := "SELECT `uuid`, `creation_date`, `content`, `account`, `author` FROM `MESSAGE`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `MESSAGE`"
 	var countParams []interface{}
@@ -194,7 +185,7 @@ func MessagePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `creation_date`, `content`, `note`) || tools.ValuesNotInQuery(query, `account`, `author`, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `content`) || tools.ValuesNotInQuery(query, `account`, `author`, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -202,11 +193,6 @@ func MessagePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := query["uuid"]
 	account_ := query["account"]
 	author_ := query["author"]
-	
-    creation_date_ := tools.BodyValueToString(body, "creation_date")
-	content_ := tools.BodyValueToString(body, "content")
-	note_ := tools.BodyValueToString(body, "note")
-	
 
 	// Checking if the values are empty
 	if tools.ValueIsEmpty(account_, author_, uuid_) {
@@ -221,31 +207,7 @@ func MessagePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
 			return
 		}
-	}
-
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, creation_date_, content_, note_) {
-		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-	if tools.ValueTooLong(32, creation_date_, content_, note_) {
-		tools.JsonResponse(w, 400, `{"message": "values too long"}`)
-		return
-	}
-
-    if !tools.ValueIsEmpty(account_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`) 
-			return
-		}
-	}
-	if !tools.ValueIsEmpty(author_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", author_) {
-			tools.JsonResponse(w, 400, `{"error": "This author does not exist"}`) 
-			return
-		}
-	}
-	
+	}	
 
 	if !tools.ElementExists(db, "MESSAGE", "account", account_) {
 		tools.JsonResponse(w, 400, `{"error": "This Message does not exist"}`) 
@@ -327,21 +289,21 @@ func MessageDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	if !tools.ElementExists(db, "MESSAGE", "account", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This Message does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
 		return
 	}
 	if !tools.ElementExists(db, "MESSAGE", "author", author_) {
-		tools.JsonResponse(w, 400, `{"error": "This Message does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This author does not exist"}`)
 		return
 	}
 	if !tools.ElementExists(db, "MESSAGE", "uuid", uuid_) {
-		tools.JsonResponse(w, 400, `{"error": "This Message does not exist"}`) 
+		tools.JsonResponse(w, 400, `{"error": "This uuid does not exist"}`)
 		return
 	}
 	
 
 	// Deleting the Message in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `MESSAGE` WHERE account = ?, author = ?, uuid = ?", account_, author_, uuid_)
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `MESSAGE` WHERE account = ? AND author = ? AND uuid = ?", account_, author_, uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -358,7 +320,7 @@ func MessageDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func MessageGetAll(db *sql.DB, account_ string, author_ string, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `creation_date`, `content`, `note`, `account`, `author` FROM `MESSAGE` WHERE account = ?, author = ?, uuid = ?", account_, author_, uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `creation_date`, `content`, `account`, `author` FROM `MESSAGE` WHERE account = ? AND author = ? AND uuid = ?", account_, author_, uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -368,18 +330,18 @@ func MessageGetAll(db *sql.DB, account_ string, author_ string, uuid_ string, ar
 }
 
 func MessageGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, creation_date_, content_, note_, account_, author_ string
+	var uuid_, creation_date_, content_, account_, author_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &creation_date_, &content_, &note_, &account_, &author_)
+			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "note": "` + note_ + `", "account": "` + account_ + `", "author": "` + author_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -388,11 +350,11 @@ func MessageGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &creation_date_, &content_, &note_, &account_, &author_)
+			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "note": "` + note_ + `", "account": "` + account_ + `", "author": "` + author_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `"`, nil
 	}
 }
