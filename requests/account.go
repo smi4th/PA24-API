@@ -37,7 +37,7 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) {
+	if tools.ValuesNotInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -48,10 +48,11 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	last_name_ := tools.BodyValueToString(body, "last_name")
 	email_ := tools.BodyValueToString(body, "email")
 	account_type_ := tools.BodyValueToString(body, "account_type")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_, account_type_) {
+	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_, account_type_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -97,7 +98,7 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Account in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT` (`uuid`, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, username_, password_, first_name_, last_name_, email_, account_type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `ACCOUNT` (`uuid`, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid_, username_, password_, first_name_, last_name_, email_, account_type_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -129,12 +130,12 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all", "provider") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all", "provider", "imgPath") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider` FROM `ACCOUNT`"
+	request := "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider`, `imgPath` FROM `ACCOUNT`"
 	var params []interface{}
 
 	countRequest := "SELECT COUNT(*) FROM `ACCOUNT`"
@@ -211,7 +212,7 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `provider`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `provider`, "imgPath") || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -380,7 +381,7 @@ func AccountDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func AccountGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider` FROM `ACCOUNT` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, `provider`, `imgPath` FROM `ACCOUNT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -390,7 +391,7 @@ func AccountGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
 }
 
 func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, username_, first_name_, last_name_, email_, creation_date_, account_type_ string
+	var uuid_, username_, first_name_, last_name_, email_, creation_date_, account_type_, imgPath_ string
 	var provider_ sql.NullString
 
 	switch arrayOutput {
@@ -398,7 +399,7 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
@@ -408,7 +409,7 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 			} else {
 				provider = ""
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -417,7 +418,7 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_)
+			err := result.Scan(&uuid_, &username_, &first_name_, &last_name_, &email_, &creation_date_, &account_type_, &provider_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
@@ -428,6 +429,6 @@ func AccountGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		} else {
 			provider = ""
 		}
-		return `"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `"`, nil
+		return `"uuid": "` + uuid_ + `", "username": "` + username_ + `", "first_name": "` + first_name_ + `", "last_name": "` + last_name_ + `", "email": "` + email_ + `", "creation_date": "` + creation_date_ + `", "account_type": "` + account_type_ + `", "provider": "` + provider + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }

@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT_TYPE` (
 CREATE TABLE IF NOT EXISTS `PROVIDER` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `name` VARCHAR(45) NOT NULL, -- UNIQUE
-    `email` VARCHAR(45) NOT NULL -- UNIQUE
+    `email` VARCHAR(45) NOT NULL, -- UNIQUE
+    `imgPath` VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT` (
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT` (
     `last_name` VARCHAR(45) NOT NULL,
     `email` VARCHAR(45) NOT NULL, -- UNIQUE
     `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
+    `imgPath` VARCHAR(255),
     `account_type` VARCHAR(40) NOT NULL,
     `provider` VARCHAR(40),
     FOREIGN KEY (`account_type`) REFERENCES `ACCOUNT_TYPE`(`uuid`),
@@ -38,7 +40,8 @@ CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
     `ads` BOOLEAN NOT NULL,
     `VIP` BOOLEAN NOT NULL,
     `description` TEXT NOT NULL,
-    `duration` INT NOT NULL
+    `duration` INT NOT NULL,
+    `imgPath` VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
@@ -52,13 +55,15 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
 
 CREATE TABLE IF NOT EXISTS `SERVICES_TYPES` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `type` VARCHAR(45) NOT NULL -- UNIQUE
+    `type` VARCHAR(45) NOT NULL, -- UNIQUE
+    `imgPath` VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS `SERVICES` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `price` DECIMAL(10, 2) NOT NULL,
     `description` TEXT NOT NULL,
+    `imgPath` VARCHAR(255),
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
@@ -86,7 +91,8 @@ CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (
 
 CREATE TABLE IF NOT EXISTS `HOUSE_TYPE` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `type` VARCHAR(45) NOT NULL -- UNIQUE
+    `type` VARCHAR(45) NOT NULL, -- UNIQUE
+    `imgPath` VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS `HOUSING` (
@@ -99,6 +105,7 @@ CREATE TABLE IF NOT EXISTS `HOUSING` (
     `zip_code` VARCHAR(45) NOT NULL,
     `street` VARCHAR(45) NOT NULL,
     `description` TEXT NOT NULL,
+    `imgPath` VARCHAR(255),
     `house_type` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`house_type`) REFERENCES `HOUSE_TYPE`(`uuid`),
@@ -107,7 +114,8 @@ CREATE TABLE IF NOT EXISTS `HOUSING` (
 
 CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `name` VARCHAR(45) NOT NULL -- UNIQUE
+    `name` VARCHAR(45) NOT NULL, -- UNIQUE
+    `imgPath` VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS `EQUIPMENT` (
@@ -116,6 +124,7 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT` (
     `description` TEXT NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `number` INT NOT NULL,
+    `imgPath` VARCHAR(255),
     `equipment_type` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`equipment_type`) REFERENCES `EQUIPMENT_TYPE`(`uuid`),
@@ -128,6 +137,7 @@ CREATE TABLE IF NOT EXISTS `BED_ROOM` (
     `price` DECIMAL(10, 2) NOT NULL,
     `description` TEXT NOT NULL,
     `validated` BOOLEAN NOT NULL,
+    `imgPath` VARCHAR(255),
     `housing` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
@@ -160,6 +170,7 @@ CREATE TABLE IF NOT EXISTS `MESSAGE` (
     `uuid` VARCHAR(40) NOT NULL,
     `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
     `content` TEXT NOT NULL,
+    `imgPath` VARCHAR(255),
     `account` VARCHAR(40) NOT NULL,
     `author` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `author`, `uuid`),

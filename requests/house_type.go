@@ -41,16 +41,17 @@ func HouseTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `type`) {
+	if tools.ValuesNotInBody(body, `type`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     type_ := tools.BodyValueToString(body, "type")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(type_) {
+	if tools.ValueIsEmpty(type_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -80,7 +81,7 @@ func HouseTypePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the HouseType in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSE_TYPE` (`uuid`, `type`) VALUES (?, ?)", uuid_, type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSE_TYPE` (`uuid`, `type`, `imgPath`) VALUES (?, ?, ?)", uuid_, type_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -112,12 +113,12 @@ func HouseTypeGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `type`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `type`, "all", `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `type` FROM `HOUSE_TYPE`"
+	request := "SELECT `uuid`, `type`, `imgPath` FROM `HOUSE_TYPE`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `HOUSE_TYPE`"
 	var countParams []interface{}
@@ -193,7 +194,7 @@ func HouseTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `type`, `imgPath`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -327,7 +328,7 @@ func HouseTypeDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func HouseTypeGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `type` FROM `HOUSE_TYPE` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `type`, `imgPath` FROM `HOUSE_TYPE` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -337,18 +338,18 @@ func HouseTypeGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error)
 }
 
 func HouseTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, type_ string
+	var uuid_, type_, imgPath_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &type_)
+			err := result.Scan(&uuid_, &type_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -357,11 +358,11 @@ func HouseTypeGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, err
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &type_)
+			err := result.Scan(&uuid_, &type_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }

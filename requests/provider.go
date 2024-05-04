@@ -41,17 +41,18 @@ func ProviderPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `name`, `email`) {
+	if tools.ValuesNotInBody(body, `name`, `email`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
     name_ := tools.BodyValueToString(body, "name")
 	email_ := tools.BodyValueToString(body, "email")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name_, email_) {
+	if tools.ValueIsEmpty(name_, email_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -90,7 +91,7 @@ func ProviderPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Provider in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `PROVIDER` (`uuid`, `name`, `email`) VALUES (?, ?, ?)", uuid_, name_, email_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `PROVIDER` (`uuid`, `name`, `email`, `imgPath`) VALUES (?, ?, ?, ?)", uuid_, name_, email_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -122,12 +123,12 @@ func ProviderGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `email`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `email`, `imgPath`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `name`, `email` FROM `PROVIDER`"
+	request := "SELECT `uuid`, `name`, `email`, `imgPath` FROM `PROVIDER`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `PROVIDER`"
 	var countParams []interface{}
@@ -203,7 +204,7 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`, `email`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `email`, `imgPath`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -347,7 +348,7 @@ func ProviderDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func ProviderGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `email` FROM `PROVIDER` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `email`, `imgPath` FROM `PROVIDER` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -357,18 +358,18 @@ func ProviderGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) 
 }
 
 func ProviderGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, name_, email_ string
+	var uuid_, name_, email_, imgPath_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &email_)
+			err := result.Scan(&uuid_, &name_, &email_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -377,11 +378,11 @@ func ProviderGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &email_)
+			err := result.Scan(&uuid_, &name_, &email_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "email": "` + email_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }

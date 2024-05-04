@@ -37,7 +37,7 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `content`, `account`, `author`) {
+	if tools.ValuesNotInBody(body, `content`, `account`, `author`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -45,6 +45,7 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	content_ := tools.BodyValueToString(body, "content")
 	account_ := tools.BodyValueToString(body, "account")
 	author_ := tools.BodyValueToString(body, "author")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	
 	if tools.GetUUID(r, db) != author_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
@@ -52,7 +53,7 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(content_, account_, author_) {
+	if tools.ValueIsEmpty(content_, account_, author_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -72,7 +73,7 @@ func MessagePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	// Inserting the Message in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `MESSAGE` (`uuid`, `content`, `account`, `author`) VALUES (?, ?, ?, ?)", uuid_, content_, account_, author_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `MESSAGE` (`uuid`, `content`, `account`, `author`, `imgPath`) VALUES (?, ?, ?, ?, ?)", uuid_, content_, account_, author_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -104,12 +105,12 @@ func MessageGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `creation_date`, `content`, `account`, `author`, "all") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `creation_date`, `content`, `account`, `author`, "all", "imgPath") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `creation_date`, `content`, `account`, `author` FROM `MESSAGE`"
+	request := "SELECT `uuid`, `creation_date`, `content`, `account`, `author`, `imgPath` FROM `MESSAGE`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `MESSAGE`"
 	var countParams []interface{}
@@ -185,7 +186,7 @@ func MessagePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `content`) || tools.ValuesNotInQuery(query, `account`, `author`, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `content`, `imgPath`) || tools.ValuesNotInQuery(query, `account`, `author`, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -320,7 +321,7 @@ func MessageDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func MessageGetAll(db *sql.DB, account_ string, author_ string, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `creation_date`, `content`, `account`, `author` FROM `MESSAGE` WHERE account = ? AND author = ? AND uuid = ?", account_, author_, uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `creation_date`, `content`, `account`, `author`, `imgPath` FROM `MESSAGE` WHERE account = ? AND author = ? AND uuid = ?", account_, author_, uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -330,18 +331,18 @@ func MessageGetAll(db *sql.DB, account_ string, author_ string, uuid_ string, ar
 }
 
 func MessageGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, creation_date_, content_, account_, author_ string
+	var uuid_, creation_date_, content_, account_, author_, imgPath_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_)
+			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -350,11 +351,11 @@ func MessageGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_)
+			err := result.Scan(&uuid_, &creation_date_, &content_, &account_, &author_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "creation_date": "` + creation_date_ + `", "content": "` + content_ + `", "account": "` + account_ + `", "author": "` + author_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }

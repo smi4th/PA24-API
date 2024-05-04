@@ -37,7 +37,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `name`, `description`, `price`, `number`, `equipment_type`, `housing`) {
+	if tools.ValuesNotInBody(body, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -48,6 +48,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	number_ := tools.BodyValueToString(body, "number")
 	equipment_type_ := tools.BodyValueToString(body, "equipment_type")
 	housing_ := tools.BodyValueToString(body, "housing")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 
 	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -55,7 +56,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name_, description_, price_, number_, equipment_type_, housing_) {
+	if tools.ValueIsEmpty(name_, description_, price_, number_, equipment_type_, housing_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -83,7 +84,7 @@ func EquipmentPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Equipment in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `EQUIPMENT` (`uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, name_, description_, price_, number_, equipment_type_, housing_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `EQUIPMENT` (`uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid_, name_, description_, price_, number_, equipment_type_, housing_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -115,12 +116,12 @@ func EquipmentGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `all`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `all`, "imgPath") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing` FROM `EQUIPMENT`"
+	request := "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `imgPath` FROM `EQUIPMENT`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `EQUIPMENT`"
 	var countParams []interface{}
@@ -196,7 +197,7 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `number`, `housing`, `equipment_type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `number`, `housing`, `equipment_type`, "imgPath") || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -338,7 +339,7 @@ func EquipmentDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func EquipmentGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing` FROM `EQUIPMENT` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `description`, `price`, `number`, `equipment_type`, `housing`, `imgPath` FROM `EQUIPMENT` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -348,18 +349,18 @@ func EquipmentGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error)
 }
 
 func EquipmentGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, name_, description_, price_, number_, equipment_type_, housing_ string
+	var uuid_, name_, description_, price_, number_, equipment_type_, housing_, imgPath_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_)
+			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -368,11 +369,11 @@ func EquipmentGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, err
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_)
+			err := result.Scan(&uuid_, &name_, &description_, &price_, &number_, &equipment_type_, &housing_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "description": "` + description_ + `", "price": "` + price_ + `", "number": "` + number_ + `", "equipment_type": "` + equipment_type_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }
