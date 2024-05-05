@@ -37,7 +37,7 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`, `imgPath`) {
+	if tools.ValuesNotInBody(body, `username`, `password`, `first_name`, `last_name`, `email`, `account_type`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -48,11 +48,11 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	last_name_ := tools.BodyValueToString(body, "last_name")
 	email_ := tools.BodyValueToString(body, "email")
 	account_type_ := tools.BodyValueToString(body, "account_type")
-	imgPath_ := tools.BodyValueToString(body, "imgPath")
+	imgPath_ := ""
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_, account_type_, imgPath_) {
+	if tools.ValueIsEmpty(username_, password_, first_name_, last_name_, email_, account_type_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
