@@ -130,7 +130,7 @@ func AccountGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all", "provider", "imgPath") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `username`, `first_name`, `last_name`, `email`, `creation_date`, `account_type`, "all", "provider", "imgPath", "token") {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
