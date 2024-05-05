@@ -48,7 +48,7 @@ func AccountPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	last_name_ := tools.BodyValueToString(body, "last_name")
 	email_ := tools.BodyValueToString(body, "email")
 	account_type_ := tools.BodyValueToString(body, "account_type")
-	imgPath_ := ""
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	
 
 	// Checking if the values are empty
