@@ -139,6 +139,7 @@ func ReservationHousingGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if query["all"] != "true" {
 		request += " WHERE "
+		countRequest += " WHERE "
 
 		strictSearch := query["strictSearch"] == "true"
 
