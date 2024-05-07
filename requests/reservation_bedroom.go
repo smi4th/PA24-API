@@ -85,6 +85,11 @@ func ReservationBedroomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 		tools.JsonResponse(w, 400, `{"error": "This ReservationBedroom already exists"}`)
 		return
 	}
+
+	if tools.PeriodeOverlap(db, "RESERVATION_BEDROOM", "start_time", "end_time", "bed_room", bed_room_, start_time_, end_time_) {
+		tools.JsonResponse(w, 400, `{"error": "This ReservationBedroom overlaps with another"}`)
+		return
+	}
 	
 	
 

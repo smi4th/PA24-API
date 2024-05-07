@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `RESERVATION_BEDROOM` (
     `review_note` INT NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `bed_room` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `bed_room`),
+    PRIMARY KEY (`account`, `bed_room`, `start_time`),
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
     FOREIGN KEY (`bed_room`) REFERENCES `BED_ROOM`(`uuid`)
 );
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `RESERVATION_HOUSING` (
     `review_note` INT NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `housing`),
+    PRIMARY KEY (`account`, `housing`, `start_time`),
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
     FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );

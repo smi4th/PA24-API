@@ -491,6 +491,63 @@ func RowsToJson(rows *sql.Rows) string {
 #######################################
 */
 
+func GetDate() string {
+	return time.Now().Format("2006-01-02")
+}
+
+func DateBefore(date1 string, date2 string) bool {
+	layout := "2006-01-02"
+	t1, err := time.Parse(layout, date1)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	t2, err := time.Parse(layout, date2)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	return t1.Before(t2)
+}
+
+func DateAfter(date1 string, date2 string) bool {
+	layout := "2006-01-02"
+	t1, err := time.Parse(layout, date1)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	t2, err := time.Parse(layout, date2)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	return t1.After(t2)
+}
+
+func PeriodeOverlap(db *sql.DB, table string, start1Attribute string, end1Attribute string, pkAttribute string, pkValue string, start2Value string, end2Value string) bool {
+	// Execute the query to check if the periode overlaps in the specified table.
+	rows, err := ExecuteQuery(db, "SELECT COUNT(*) as `count` FROM `" + table + "` WHERE `" + start1Attribute + "` <= ? AND `" + end1Attribute + "` >= ? AND `" + pkAttribute + "` = ?", end2Value, start2Value, pkValue)
+	if err != nil {
+		ErrorLog(err.Error())
+		return false
+	}
+	defer rows.Close()
+
+	// Check if the periode overlaps.
+	if rows.Next() {
+		var count int
+		err := rows.Scan(&count)
+		if err != nil {
+			ErrorLog(err.Error())
+			return false
+		}
+		return count > 0
+	}
+
+	return false
+}
+
 func GenerateUUID() string {
 	uuid := make([]byte, 16)
 	_, err := rand.Read(uuid)
