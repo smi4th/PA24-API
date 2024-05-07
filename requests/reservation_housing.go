@@ -139,6 +139,7 @@ func ReservationHousingGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if query["all"] != "true" {
 		request += " WHERE "
+		countRequest += " WHERE "
 
 		strictSearch := query["strictSearch"] == "true"
 
@@ -379,7 +380,7 @@ func ReservationHousingGetAllAssociation(result *sql.Rows, arrayOutput bool) (st
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "price": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"},`
+			jsonResponse += `{"start_time": "` + start_time_ + `", "end_time": "` + end_time_ + `", "review": "` + review_ + `", "review_note": "` + review_note_ + `", "account": "` + account_ + `", "housing": "` + housing_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
