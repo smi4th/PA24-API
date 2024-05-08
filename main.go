@@ -49,6 +49,8 @@ func main() {
 			requests.Basket(w, r, db)
 		case "/bed_room":
 			requests.BedRoom(w, r, db)
+		case "/bed_room/available":
+			requests.BedroomAvailable(w, r, db)
 		case "/consume":
 			requests.Consume(w, r, db)
 		case "/disponibility":
@@ -61,6 +63,8 @@ func main() {
 			requests.HouseType(w, r, db)
 		case "/housing":
 			requests.Housing(w, r, db)
+		case "/housing/available":
+			requests.HousingAvailable(w, r, db)
 		case "/message":
 			requests.Message(w, r, db)
 		case "/provider":
