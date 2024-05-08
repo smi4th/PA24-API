@@ -43,6 +43,8 @@ func main() {
 			requests.AccountType(w, r, db)
 		case "/account":
 			requests.Account(w, r, db)
+		case "/account/verifyPassword":
+			requests.VerifyPassword(w, r, db)
 		case "/admin":
 			requests.Admin(w, r, db)
 		case "/basket":
