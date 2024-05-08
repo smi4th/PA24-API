@@ -100,7 +100,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Housing in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, surface_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_, imgPath_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`, `validated`) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, surface_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_, imgPath_, "0")
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)

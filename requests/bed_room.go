@@ -83,7 +83,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the BedRoom in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, nbPlaces_, price_, description_, "false", housing_, imgPath_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, nbPlaces_, price_, description_, "0", housing_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
