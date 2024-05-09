@@ -200,6 +200,11 @@ func AccountTypePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.AtLeastOneValueInBody(body, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update the uuid"}`)
+		return
+	}
+
 	uuid_ := query["uuid"]
 	
     type_ := tools.BodyValueToString(body, "type")

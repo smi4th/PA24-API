@@ -197,8 +197,13 @@ func EquipmentPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `number`, `housing`, `equipment_type`, "imgPath") || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `description`, `price`, `number`, `equipment_type`, "imgPath") || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
+		return
+	}
+
+	if !tools.AtLeastOneValueInBody(body, `uuid`, `housing`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
 		return
 	}
 

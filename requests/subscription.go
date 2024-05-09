@@ -201,6 +201,11 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.AtLeastOneValueInBody(body, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+		return
+	}
+
 	uuid_ := query["uuid"]
 	
     name_ := tools.BodyValueToString(body, "name")

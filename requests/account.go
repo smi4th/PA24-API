@@ -217,6 +217,11 @@ func AccountPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.AtLeastOneValueInBody(body, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
+		return
+	}
+
 	uuid_ := query["uuid"]
 	
     username_ := tools.BodyValueToString(body, "username")

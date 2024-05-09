@@ -91,6 +91,13 @@ INSERT INTO BASKET_SERVICE (start_time, basket, service) VALUES
 (NOW(), '2', '2'),
 (NOW(), '3', '3');
 
+INSERT INTO REVIEW (uuid, content, note, account, service) VALUES
+('1', 'Service rapide et efficace.', 3, '3', '3');
+INSERT INTO REVIEW (uuid, content, note, account, housing) VALUES
+('2', 'Très bon accueil, je recommande.', 5, '1', '1');
+INSERT INTO REVIEW (uuid, content, note, account, bedroom) VALUES
+('3', 'Chambre spacieuse et confortable.', 4, '2', '2');
+
 INSERT INTO MESSAGE (uuid, creation_date, content, account, author, imgPath) VALUES
 ('1', NOW(), 'Bonjour, je suis intéressé par votre logement.', '1', '2', 'NULL'),
 ('2', NOW(), 'Bonjour, merci pour votre message.', '2', '1', 'NULL'),
