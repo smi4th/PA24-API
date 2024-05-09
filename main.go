@@ -81,6 +81,8 @@ func main() {
 			requests.Message(w, r, db)
 		case "/provider":
 			requests.Provider(w, r, db)
+		case "/review":
+			requests.Review(w, r, db)
 		case "/services_types":
 			requests.ServicesTypes(w, r, db)
 		case "/services":

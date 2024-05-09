@@ -219,8 +219,13 @@ func HousingPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, "imgPath", "title") || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `surface`, `price`, `validated`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, "imgPath", "title") || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
+		return
+	}
+
+	if !tools.AtLeastOneValueInBody(body, `uuid`, `account`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
 		return
 	}
 

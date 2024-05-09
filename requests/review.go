@@ -6,30 +6,30 @@ import (
 	"database/sql"
 )
 
-func Services(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func Review(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		ServicesPost(w, r, db)
+		ReviewPost(w, r, db)
 	case "GET":
-		ServicesGet(w, r, db)
+		ReviewGet(w, r, db)
 	case "PUT":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
-			ServicesPut(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "REVIEW", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
+			ReviewPut(w, r, db)
 		} else {
-			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	case "DELETE":
-		if tools.GetUUID(r, db) == tools.GetElement(db, "SERVICES", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
-			ServicesDelete(w, r, db)
+		if tools.GetUUID(r, db) == tools.GetElement(db, "REVIEW", "account", "uuid", tools.ReadQuery(r)["uuid"]) || tools.IsAdmin(r, db) {
+			ReviewDelete(w, r, db)
 		} else {
-			tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
+			tools.JsonResponse(w, 403, `{"message": "Forbidden"}`)
 		}
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
 }
 
-func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func ReviewPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Getting the body of the request
 	body := tools.ReadBody(r)
@@ -37,51 +37,83 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `price`, `description`, `account`, `service_type`, `imgPath`) {
+	if tools.ValuesNotInBody(body, `content`, `note`, `account`) || tools.AtLeastOneValueInBody(body, `service`, `housing`, `bedRoom`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-    price_ := tools.BodyValueToString(body, "price")
-	description_ := tools.BodyValueToString(body, "description")
+    content_ := tools.BodyValueToString(body, "content")
+	note_ := tools.BodyValueToString(body, "note")
 	account_ := tools.BodyValueToString(body, "account")
-	service_type_ := tools.BodyValueToString(body, "service_type")
-	imgPath_ := tools.BodyValueToString(body, "imgPath")
+	services_ := tools.BodyValueToString(body, "service")
+	housing_ := tools.BodyValueToString(body, "housing")
+	bedRoom_ := tools.BodyValueToString(body, "bedRoom")
 
-	if tools.GetUUID(r, db) != tools.GetElement(db, "ACCOUNT", "uuid", "uuid", account_) && !tools.IsAdmin(r, db) {
+	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
 		return
 	}
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(price_, description_, account_, service_type_, imgPath_) {
+	if tools.ValueIsEmpty(content_, note_, account_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
 
 	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, description_) {
+	if tools.ValueTooShort(4, content_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
 
-	if !tools.ElementExists(db, "SERVICES_TYPES", "uuid", service_type_) {
-		tools.JsonResponse(w, 400, `{"error": "This service_type does not exist"}`) 
+	requestValue := ""
+	request := ""
+
+	if !tools.ValueIsEmpty(services_) {
+		tools.InfoLog("Value not empty")
+		if !tools.ElementExists(db, "SERVICES", "uuid", services_) {
+			tools.JsonResponse(w, 400, `{"error": "This services does not exist"}`)
+			return
+		} else {
+			tools.InfoLog("Value exists")
+			request = "service"
+			requestValue = services_
+		}
+	} else if !tools.ValueIsEmpty(housing_) {
+		if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
+			tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`)
+			return
+		} else {
+			request = "housing"
+			requestValue = housing_
+		}
+	} else if !tools.ValueIsEmpty(bedRoom_) {
+		if !tools.ElementExists(db, "BED_ROOM", "uuid", bedRoom_) {
+			tools.JsonResponse(w, 400, `{"error": "This bedRoom does not exist"}`)
+			return
+		} else {
+			request = "bedRoom"
+			requestValue = bedRoom_
+		}
+	} else {
+		tools.JsonResponse(w, 400, `{"error": "No element found"}`)
 		return
 	}
-	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-		tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
+
+	if tools.ElementExists(db, "REVIEW", "account", account_) {
+		tools.JsonResponse(w, 400, `{"error": "This account already posted a review on this element"}`)
 		return
 	}
-	
 
-	
 
+	tools.InfoLog(request)
+
+	// Generating the UUID
 	uuid_ := tools.GenerateUUID()
 
-	// Inserting the Services in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_)
+	// Inserting the Review in the database
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `REVIEW` (`uuid`, `content`, `note`, `account`, `" + request + "`) VALUES (?, ?, ?, ?, ?)", uuid_, content_, note_, account_, requestValue)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -90,10 +122,10 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Services created"`
+	jsonResponse := `{"message": "Review created"`
 
 	// Adding the return fields of the query
-	fields, err := ServicesGetAll(db, uuid_, false)
+	fields, err := ReviewGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -105,7 +137,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 }
 
-func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func ReviewGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 	// Getting the query parameters
 	query := tools.ReadQuery(r)
@@ -113,14 +145,14 @@ func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `all`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `account`, `services`, `housing`, `bedRoom`, `note`, `content`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES`"
+	request := "SELECT `uuid`, `content`, `note`, `account`, case when `service` is null then 'NULL' else `service` end as `service`, case when `housing` is null then 'NULL' else `housing` end as `housing`, case when `bedRoom` is null then 'NULL' else `bedRoom` end as `bedRoom` FROM `REVIEW`"
 	var params []interface{}
-	countRequest := "SELECT COUNT(*) FROM `SERVICES`"
+	countRequest := "SELECT COUNT(*) FROM `REVIEW`"
 	var countParams []interface{}
 
 	if query["all"] != "true" {
@@ -155,13 +187,13 @@ func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse, err := ServicesGetAllAssociation(result, true)
+	jsonResponse, err := ReviewGetAllAssociation(result, true)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
-	
+
 	result, err = tools.ExecuteQuery(db, countRequest, countParams...)
 	if err != nil {
 		tools.ErrorLog(err.Error())
@@ -185,7 +217,7 @@ func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 }
 
-func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func ReviewPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 	// Getting the body of the request
 	body := tools.ReadBody(r)
@@ -194,26 +226,30 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `price`, `description`, `service_type`, `imgPath`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `content`, `note`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	if !tools.AtLeastOneValueInBody(body, `account`) {
-		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
+	// check if service, housing or bedRoom is in the body
+	if !tools.AtLeastOneValueInBody(body, `service`, `housing`, `bedRoom`, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update the element"}`)
 		return
 	}
 
 	uuid_ := query["uuid"]
 	
-	description_ := tools.BodyValueToString(body, "description")
-	account_ := tools.BodyValueToString(body, "account")
-	service_type_ := tools.BodyValueToString(body, "service_type")
-	
+	content_ := tools.BodyValueToString(body, "content")
 
 	// Checking if the values are empty
 	if tools.ValueIsEmpty(uuid_) {
 		tools.JsonResponse(w, 400, `{"message": "Empty fields"}`)
+		return
+	}
+
+	// Checking if the values are too short or too long
+	if tools.ValueTooShort(4, content_) {
+		tools.JsonResponse(w, 400, `{"message": "Fields too short"}`)
 		return
 	}
 
@@ -226,38 +262,8 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 	}
 
-	// Checking if the values are too short or too long
-	if tools.ValueTooShort(4, description_) {
-		tools.JsonResponse(w, 400, `{"message": "values too short"}`)
-		return
-	}
-
-    if !tools.ValueIsEmpty(service_type_) {
-		if !tools.ElementExists(db, "SERVICES_TYPES", "uuid", service_type_) {
-			tools.JsonResponse(w, 400, `{"error": "This service_type does not exist"}`) 
-			return
-		}
-	}
-	if !tools.ValueIsEmpty(account_) {
-		if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
-			tools.JsonResponse(w, 400, `{"error": "This account does not exist"}`)
-			return
-		}
-	}
-
-	
-
-	if !tools.ElementExists(db, "SERVICES", "uuid", uuid_) {
-		tools.JsonResponse(w, 400, `{"error": "This Services does not exist"}`) 
-		return
-	}
-	
-
-	
-
-    
-
-	request := "UPDATE `SERVICES` SET "
+	// Creating the request
+	request := "UPDATE `REVIEW` SET "
 	var params []interface{}
 	
 	for key, value := range body {
@@ -285,10 +291,10 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Services updated"`
+	jsonResponse := `{"message": "Review updated"`
 	
 	// Adding the return fields of the query
-	fields, err := ServicesGetAll(db, uuid_, false)
+	fields, err := ReviewGetAll(db, uuid_, false)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -300,7 +306,7 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 }
 
-func ServicesDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func ReviewDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 	// Getting the query parameters
 	query := tools.ReadQuery(r)
@@ -316,14 +322,14 @@ func ServicesDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := query["uuid"]
 	
 
-	if !tools.ElementExists(db, "SERVICES", "uuid", uuid_) {
-		tools.JsonResponse(w, 400, `{"error": "This Services does not exist"}`) 
+	if !tools.ElementExists(db, "REVIEW", "uuid", uuid_) {
+		tools.JsonResponse(w, 400, `{"error": "This Review does not exist"}`) 
 		return
 	}
 	
 
-	// Deleting the Services in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `SERVICES` WHERE uuid = ?", uuid_)
+	// Deleting the Review in the database
+	result, err := tools.ExecuteQuery(db, "DELETE FROM `REVIEW` WHERE uuid = ?", uuid_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -332,36 +338,36 @@ func ServicesDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer result.Close()
 
 	// Creating the response
-	jsonResponse := `{"message": "Services deleted", "uuid": "` + uuid_ + `"}`
+	jsonResponse := `{"message": "Review deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
 
-func ServicesGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES` WHERE uuid = ?", uuid_)
+func ReviewGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `content`, `note`, `account`, case when `service` is null then 'NULL' else `service` end as `service`, case when `housing` is null then 'NULL' else `housing` end as `housing`, case when `bedRoom` is null then 'NULL' else `bedRoom` end as `bedRoom` FROM `REVIEW` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
 	defer result.Close()
 
-	return ServicesGetAllAssociation(result, arrayOutput)
+	return ReviewGetAllAssociation(result, arrayOutput)
 }
 
-func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, price_, description_, account_, service_type_, imgPath_ string
+func ReviewGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
+	var uuid_, account_, content_, note_, services_, housing_, bedRoom_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
+			err := result.Scan(&uuid_, &content_, &note_, &account_, &services_, &housing_, &bedRoom_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "account": "` + account_ + `", "content": "` + content_ + `", "note": "` + note_ + `", "services": "` + services_ + `", "housing": "` + housing_ + `", "bedRoom": "` + bedRoom_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -370,11 +376,11 @@ func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
+			err := result.Scan(&uuid_, &content_, &note_, &account_, &services_, &housing_, &bedRoom_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "account": "` + account_ + `", "content": "` + content_ + `", "note": "` + note_ + `", "services": "` + services_ + `", "housing": "` + housing_ + `", "bedRoom": "` + bedRoom_ + `"`, nil
 	}
 }

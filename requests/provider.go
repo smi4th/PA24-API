@@ -209,6 +209,11 @@ func ProviderPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.AtLeastOneValueInBody(body, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
+		return
+	}
+
 	uuid_ := query["uuid"]
 	
     name_ := tools.BodyValueToString(body, "name")

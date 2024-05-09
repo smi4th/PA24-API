@@ -288,9 +288,9 @@ func IsAdmin(r *http.Request, db *sql.DB) bool {
 	return false
 }
 
-func GetElement(db *sql.DB, table string, attribute string, idAttribute string, idValue string) string {
+func GetElement(db *sql.DB, table string, attribute string, pkAttribute string, pkValue string) string {
 	// Execute the query to get the element from the specified table and attribute.
-	rows, err := ExecuteQuery(db, "SELECT `" + attribute + "` FROM `" + table + "` WHERE `" + idAttribute + "` = ?", idValue)
+	rows, err := ExecuteQuery(db, "SELECT `" + attribute + "` FROM `" + table + "` WHERE `" + pkAttribute + "` = ?", pkValue)
 	if err != nil {
 		ErrorLog(err.Error())
 		return ""

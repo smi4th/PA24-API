@@ -192,6 +192,11 @@ func MessagePut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if !tools.AtLeastOneValueInBody(body, `account`, `author`, `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Cannot update all fields"}`)
+		return
+	}
+
 	uuid_ := query["uuid"]
 	account_ := query["account"]
 	author_ := query["author"]
