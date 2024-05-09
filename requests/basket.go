@@ -247,6 +247,8 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	jsonResponse := `{"count": ` + count + `, "baskets": [`
 
+
+	nbMainResult := 0
 	mainResult, err := tools.ExecuteQuery(db, mainRequest, mainParams...)
 	if err != nil {
 		tools.ErrorLog(err.Error())
@@ -256,6 +258,9 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer mainResult.Close()
 
 	for mainResult.Next() {
+
+		nbMainResult++
+
 		var (
 			account_ string
 			paid_ string
@@ -433,7 +438,18 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if jsonResponse[len(jsonResponse)-1] == ',' {
 		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
 	}
-	jsonResponse += `]}]}`
+	jsonResponse += `]}`
+
+	if nbMainResult > 0 {
+		jsonResponse += `]`
+	}
+
+	for i := 0; i < nbMainResult; i++ {
+		jsonResponse += `}`
+		if i != nbMainResult-1 {
+			jsonResponse += `,`
+		}
+	}
 
 	tools.JsonResponse(w, 200, jsonResponse)
 
