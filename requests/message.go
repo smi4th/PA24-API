@@ -127,6 +127,7 @@ func MessageGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		// Removing the last "AND"
 		request = request[:len(request)-3]
+		countRequest = countRequest[:len(countRequest)-3]
 
 	}
 
