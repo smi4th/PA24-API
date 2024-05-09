@@ -1,7 +1,0 @@
-def JSONFILE(api_url, working_dir, headers):
-    data = tools.formatJson(working_dir + JSONPATH)
-    response = tools.callAPI(data, headers, api_url + data["request"]["url"] + "?" + "&".join([f"{key}={value}" for key, value in data["request"]["urlParams"].items()]))
-    
-    assert response.status_code == data["response"]["status_code"]
-
-    tools.testValues(data["response"]["body"], response, working_dir + JSONPATH)

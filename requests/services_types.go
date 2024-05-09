@@ -349,7 +349,7 @@ func ServicesTypesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string,
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `imgPath": "` + imgPath_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "type": "` + type_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -363,6 +363,6 @@ func ServicesTypesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string,
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `imgPath": "` + imgPath_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "type": "` + type_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }
