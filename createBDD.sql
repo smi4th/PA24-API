@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `REVIEW` (
 
 CREATE TABLE IF NOT EXISTS `MESSAGE` (
     `uuid` VARCHAR(40) NOT NULL,
-    `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
     `content` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
     `account` VARCHAR(40) NOT NULL,

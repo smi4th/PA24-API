@@ -8,7 +8,7 @@ INSERT INTO ACCOUNT_TYPE (uuid, type, private, admin) VALUES
 INSERT INTO PROVIDER (uuid, name, email, imgPath) VALUES
 ('1', 'Provider1', 'provider1@provider1.com', NULL),
 ('2', 'Provider2', 'provider2@provider2.com', NULL),
-('3', 'Provider3', 'provider3@provider3.com', NULL);
+('3', 'Provider3', 'provider3@provider3.com', NULL);    
 
 INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, email, imgPath, account_type, provider) VALUES
 ('1', '', 'user1', '$2a$10$8gd1puAaAsl4LBpvAj6uhO4whmoaSKiD69AiZGEamUtDOr6ALZVmG', 'John', 'Doe', 'john.doe@example.com', 'NULL', '1', NULL),
@@ -18,9 +18,9 @@ INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, ema
 ('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2');
 
 INSERT INTO SUBSCRIPTION (uuid, name, price, ads, VIP, description, duration, imgPath) VALUES
-('1', 'Subscription1', 10.00, 'true', 'false', 'Subscription1 description', 30, 'NULL'),
-('2', 'Subscription2', 20.00, 'false', 'false', 'Subscription2 description', 60, 'NULL'),
-('3', 'Subscription3', 30.00, 'false', 'true', 'Subscription3 description', 90, 'NULL');
+('1', 'Subscription1', 10.00, '1', '0', 'Subscription1 description', 30, 'NULL'),
+('2', 'Subscription2', 20.00, '0', '0', 'Subscription2 description', 60, 'NULL'),
+('3', 'Subscription3', 30.00, '0', '1', 'Subscription3 description', 90, 'NULL');
 
 INSERT INTO ACCOUNT_SUBSCRIPTION (start_date, account, subscription) VALUES
 (NOW(), '1', '1'),
@@ -56,10 +56,10 @@ INSERT INTO EQUIPMENT_TYPE (uuid, name, imgPath) VALUES
 ('2', 'Mobilier', 'NULL'),
 ('3', 'Électroménager', 'NULL');
 
-INSERT INTO EQUIPMENT (uuid, name, description, price, equipment_type, housing, imgPath) VALUES
-('1', 'Lit double', 'Lit double avec matelas confortable', 100.00, '1', '1', 'NULL'),
-('2', 'Canapé', 'Canapé en cuir avec méridienne', 500.00, '2', '2', 'NULL'),
-('3', 'Réfrigérateur', 'Réfrigérateur avec congélateur', 800.00, '3', '3', 'NULL');
+INSERT INTO EQUIPMENT (uuid, name, description, price, equipment_type, housing, imgPath, number) VALUES
+('1', 'Lit double', 'Lit double avec matelas confortable', 100.00, '1', '1', 'NULL', '2'),
+('2', 'Canapé', 'Canapé en cuir avec méridienne', 500.00, '2', '2', 'NULL', '1'),
+('3', 'Réfrigérateur', 'Réfrigérateur avec congélateur', 800.00, '3', '3', 'NULL', '1');
 
 INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, imgPath, title) VALUES
 ('1', 2, 80.00, 'Chambre double avec salle de bain privée', true, '1', 'NULL', 'Chambre parentale'),
@@ -67,9 +67,9 @@ INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, im
 ('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL', 'Suite familiale');
 
 INSERT INTO `BASKET` (uuid, account, paid) VALUES
-('1', '1', 'false'),
-('2', '2', 'false'),
-('3', '3', 'false');
+('1', '1', '0'),
+('2', '2', '0'),
+('3', '3', '0');
 
 INSERT INTO BASKET_EQUIPMENT (basket, equipment, number) VALUES
 ('1', '1', 2),
