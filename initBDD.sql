@@ -46,10 +46,10 @@ INSERT INTO HOUSE_TYPE (uuid, type, imgPath) VALUES
 ('2', 'Appartement', 'NULL'),
 ('3', 'Maison de ville', 'NULL');
 
-INSERT INTO HOUSING (uuid, surface, price, validated, street_nb, city, zip_code, street, description, house_type, account, imgPath) VALUES
-('1', 100.00, 200000.00, true, '123', 'Paris', '75001', 'Rue de Rivoli', 'Belle maison individuelle', '1', '1', 'NULL'),
-('2', 75.50, 150000.00, false, '456', 'Lyon', '69001', 'Rue de la République', 'Appartement lumineux', '2', '2', 'NULL'),
-('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL');
+INSERT INTO HOUSING (uuid, surface, price, validated, street_nb, city, zip_code, street, description, house_type, account, imgPath, title) VALUES
+('1', 100.00, 200000.00, true, '123', 'Paris', '75001', 'Rue de Rivoli', 'Belle maison individuelle', '1', '1', 'NULL', 'Maison de charme'),
+('2', 75.50, 150000.00, false, '456', 'Lyon', '69001', 'Rue de la République', 'Appartement lumineux', '2', '2', 'NULL', 'Appartement cosy'),
+('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL', 'Maison familiale');
 
 INSERT INTO EQUIPMENT_TYPE (uuid, name, imgPath) VALUES
 ('1', 'Literie', 'NULL'),
@@ -61,10 +61,10 @@ INSERT INTO EQUIPMENT (uuid, name, description, price, equipment_type, housing, 
 ('2', 'Canapé', 'Canapé en cuir avec méridienne', 500.00, '2', '2', 'NULL'),
 ('3', 'Réfrigérateur', 'Réfrigérateur avec congélateur', 800.00, '3', '3', 'NULL');
 
-INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, imgPath) VALUES
-('1', 2, 80.00, 'Chambre double avec salle de bain privée', true, '1', 'NULL'),
-('2', 1, 50.00, 'Chambre individuelle avec vue sur la ville', false, '1', 'NULL'),
-('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL');
+INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, imgPath, title) VALUES
+('1', 2, 80.00, 'Chambre double avec salle de bain privée', true, '1', 'NULL', 'Chambre parentale'),
+('2', 1, 50.00, 'Chambre individuelle avec vue sur la ville', false, '1', 'NULL', 'Chambre avec vue'),
+('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL', 'Suite familiale');
 
 INSERT INTO `BASKET` (uuid, account, paid) VALUES
 ('1', '1', 'false'),
