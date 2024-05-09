@@ -31,15 +31,10 @@ INSERT INTO SERVICES_TYPES (uuid, type, imgPath) VALUES
 ('2', 'Service2', 'NULL'),
 ('3', 'Service3', 'NULL');
 
-INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath) VALUES
-('1', 10.00, 'Service1 description', '1', '1', 'NULL'),
-('2', 20.00, 'Service2 description', '2', '2', 'NULL'),
-('3', 30.00, 'Service3 description', '3', '3', 'NULL');
-
-INSERT INTO CONSUME (report, notice, note, services, account) VALUES
-('Report1', 'Notice1', 4, '1', '1'),
-('Report2', 'Notice2', 5, '2', '1'),
-('Report3', 'Notice3', 3, '3', '1');
+INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration) VALUES
+('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30'),
+('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00'),
+('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30');
 
 INSERT INTO DISPONIBILITY (uuid, start_date, end_date, account) VALUES
 ('1', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), "1"),
@@ -71,15 +66,30 @@ INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, im
 ('2', 1, 50.00, 'Chambre individuelle avec vue sur la ville', false, '1', 'NULL'),
 ('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL');
 
-INSERT INTO RESERVATION_BEDROOM (start_time, end_time, review, review_note, account, bed_room) VALUES
-(NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 'Très bon séjour, chambre confortable', 5, '1', '1'),
-(NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 'Bonne expérience, chambre propre', 4, '2', '2'),
-(NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY), 'Excellent service, chambre spacieuse', 5, '3', '3');
+INSERT INTO `BASKET` (uuid, account, paid) VALUES
+('1', '1', 'false'),
+('2', '2', 'false'),
+('3', '3', 'false');
 
-INSERT INTO RESERVATION_HOUSING (start_time, end_time, review, review_note, account, housing) VALUES
-(NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 'Excellent séjour, logement spacieux', 5, '1', '1'),
-(NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 'Bonne expérience, logement bien situé', 4, '2', '2'),
-(NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY), 'Très satisfait, logement propre et confortable', 5, '3', '3');
+INSERT INTO BASKET_EQUIPMENT (basket, equipment, number) VALUES
+('1', '1', 2),
+('2', '2', 1),
+('3', '3', 3);
+
+INSERT INTO BASKET_BEDROOM (start_time, end_time, basket, bedroom) VALUES
+(NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), '1', '1'),
+(NOW(), DATE_ADD(NOW(), INTERVAL 14 DAY), '2', '2'),
+(NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), '3', '3');
+
+INSERT INTO BASKET_HOUSING (start_time, end_time, basket, housing) VALUES
+(NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), '1', '1'),
+(NOW(), DATE_ADD(NOW(), INTERVAL 14 DAY), '2', '2'),
+(NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), '3', '3');
+
+INSERT INTO BASKET_SERVICE (start_time, basket, service) VALUES
+(NOW(), '1', '1'),
+(NOW(), '2', '2'),
+(NOW(), '3', '3');
 
 INSERT INTO MESSAGE (uuid, creation_date, content, account, author, imgPath) VALUES
 ('1', NOW(), 'Bonjour, je suis intéressé par votre logement.', '1', '2', 'NULL'),
