@@ -49,12 +49,18 @@ func main() {
 			requests.Admin(w, r, db)
 		case "/basket":
 			requests.Basket(w, r, db)
+		case "/basket/housing":
+			requests.BasketHousing(w, r, db)
+		case "/basket/bedroom":
+			requests.BasketBedroom(w, r, db)
+		case "/basket/services":
+			requests.BasketServices(w, r, db)
+		case "/basket/equipment":
+			requests.BasketEquipment(w, r, db)
 		case "/bed_room":
 			requests.BedRoom(w, r, db)
 		case "/bed_room/available":
 			requests.BedroomAvailable(w, r, db)
-		case "/consume":
-			requests.Consume(w, r, db)
 		case "/disponibility":
 			requests.Disponibility(w, r, db)
 		case "/equipment_type":
@@ -71,10 +77,6 @@ func main() {
 			requests.Message(w, r, db)
 		case "/provider":
 			requests.Provider(w, r, db)
-		case "/reservation_bedroom":
-			requests.ReservationBedroom(w, r, db)
-		case "/reservation_housing":
-			requests.ReservationHousing(w, r, db)
 		case "/services_types":
 			requests.ServicesTypes(w, r, db)
 		case "/services":
