@@ -433,10 +433,8 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if jsonResponse[len(jsonResponse)-1] == ',' {
 		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
 	}
-	jsonResponse += `]}`
+	jsonResponse += `]}]}`
 
-	// Adding the return fields of the query
-	jsonResponse += `}`
 	tools.JsonResponse(w, 200, jsonResponse)
 
 }
