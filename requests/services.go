@@ -37,7 +37,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `price`, `description`, `account`, `service_type`) {
+	if tools.ValuesNotInBody(body, `price`, `description`, `account`, `service_type`, `imgPath`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -46,6 +46,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	description_ := tools.BodyValueToString(body, "description")
 	account_ := tools.BodyValueToString(body, "account")
 	service_type_ := tools.BodyValueToString(body, "service_type")
+	imgPath_ := tools.BodyValueToString(body, "imgPath")
 
 	if tools.GetUUID(r, db) != tools.GetElement(db, "ACCOUNT", "uuid", "uuid", account_) && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -54,7 +55,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(price_, description_, account_, service_type_) {
+	if tools.ValueIsEmpty(price_, description_, account_, service_type_, imgPath_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -80,7 +81,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Services in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`) VALUES (?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -112,12 +113,12 @@ func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `price`, `description`, `account`, `service_type`, `all`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `price`, `description`, `account`, `service_type` FROM `SERVICES`"
+	request := "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `SERVICES`"
 	var countParams []interface{}
@@ -193,7 +194,7 @@ func ServicesPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `price`, `description`, `account`, `service_type`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `price`, `description`, `account`, `service_type`, `imgPath`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -334,7 +335,7 @@ func ServicesDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func ServicesGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `price`, `description`, `account`, `service_type` FROM `SERVICES` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -344,18 +345,18 @@ func ServicesGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) 
 }
 
 func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, price_, description_, account_, service_type_ string
+	var uuid_, price_, description_, account_, service_type_, imgPath_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_)
+			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -364,11 +365,11 @@ func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_)
+			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"`, nil
 	}
 }
