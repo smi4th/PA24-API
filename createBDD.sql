@@ -64,21 +64,11 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
     `price` DECIMAL(10, 2) NOT NULL,
     `description` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
+    `duration` TIME NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
     FOREIGN KEY (`service_type`) REFERENCES `SERVICES_TYPES`(`uuid`)
-);
-
-CREATE TABLE IF NOT EXISTS `CONSUME` (
-    `report` TEXT NOT NULL,
-    `notice` TEXT NOT NULL,
-    `note` INT NOT NULL,
-    `services` VARCHAR(40) NOT NULL,
-    `account` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `services`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
-    FOREIGN KEY (`services`) REFERENCES `SERVICES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (
@@ -97,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `HOUSE_TYPE` (
 
 CREATE TABLE IF NOT EXISTS `HOUSING` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `title` VARCHAR(45) NOT NULL,
     `surface` DECIMAL(10, 2) NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `validated` BOOLEAN NOT NULL,
@@ -133,6 +124,7 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT` (
 
 CREATE TABLE IF NOT EXISTS `BED_ROOM` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `title` VARCHAR(45) NOT NULL,
     `nbPlaces` INT NOT NULL,
     `price` DECIMAL(10, 2) NOT NULL,
     `description` TEXT NOT NULL,
@@ -142,28 +134,62 @@ CREATE TABLE IF NOT EXISTS `BED_ROOM` (
     FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
 
-CREATE TABLE IF NOT EXISTS `RESERVATION_BEDROOM` (
-    `start_time` DATE DEFAULT NOW(),
-    `end_time` DATE DEFAULT NOW(),
-    `review` TEXT NOT NULL,
-    `review_note` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `BASKET` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `account` VARCHAR(40) NOT NULL,
-    `bed_room` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `bed_room`, `start_time`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
-    FOREIGN KEY (`bed_room`) REFERENCES `BED_ROOM`(`uuid`)
+    `paid` BOOLEAN NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS `RESERVATION_HOUSING` (
+CREATE TABLE IF NOT EXISTS `BASKET_EQUIPMENT` (
+    `basket` VARCHAR(40) NOT NULL,
+    `equipment` VARCHAR(40) NOT NULL,
+    `number` INT NOT NULL,
+    PRIMARY KEY (`basket`, `equipment`),
+    FOREIGN KEY (`basket`) REFERENCES `BASKET`(`uuid`),
+    FOREIGN KEY (`equipment`) REFERENCES `EQUIPMENT`(`uuid`)
+);
+
+CREATE TABLE IF NOT EXISTS `BASKET_BEDROOM` (
     `start_time` DATE DEFAULT NOW(),
     `end_time` DATE DEFAULT NOW(),
-    `review` TEXT NOT NULL,
-    `review_note` INT NOT NULL,
-    `account` VARCHAR(40) NOT NULL,
+    `basket` VARCHAR(40) NOT NULL,
+    `bedroom` VARCHAR(40) NOT NULL,
+    PRIMARY KEY (`basket`, `bedroom`),
+    FOREIGN KEY (`basket`) REFERENCES `BASKET`(`uuid`),
+    FOREIGN KEY (`bedroom`) REFERENCES `BED_ROOM`(`uuid`)
+);
+
+CREATE TABLE IF NOT EXISTS `BASKET_HOUSING` (
+    `start_time` DATE DEFAULT NOW(),
+    `end_time` DATE DEFAULT NOW(),
+    `basket` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
-    PRIMARY KEY (`account`, `housing`, `start_time`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    PRIMARY KEY (`basket`, `housing`),
+    FOREIGN KEY (`basket`) REFERENCES `BASKET`(`uuid`),
     FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
+);
+
+CREATE TABLE IF NOT EXISTS `BASKET_SERVICE` (
+    `start_time` DATETIME DEFAULT NOW(),
+    `basket` VARCHAR(40) NOT NULL,
+    `service` VARCHAR(40) NOT NULL,
+    PRIMARY KEY (`basket`, `service`),
+    FOREIGN KEY (`basket`) REFERENCES `BASKET`(`uuid`),
+    FOREIGN KEY (`service`) REFERENCES `SERVICES`(`uuid`)
+);
+
+CREATE TABLE IF NOT EXISTS `REVIEW` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `content` TEXT NOT NULL,
+    `note` INT NOT NULL,
+    `account` VARCHAR(40) NOT NULL,
+    `service` VARCHAR(40) NULL,
+    `housing` VARCHAR(40) NULL,
+    `bedroom` VARCHAR(40) NULL,
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`service`) REFERENCES `SERVICES`(`uuid`),
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`),
+    FOREIGN KEY (`bedroom`) REFERENCES `BED_ROOM`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `MESSAGE` (
