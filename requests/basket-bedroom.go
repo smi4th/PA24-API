@@ -89,7 +89,7 @@ func BasketBedroomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Inserting the basket_housing
-	_, err = db.Exec("INSERT INTO BASKET_BEDROOM (basket, bedroom, start_time, end_time) VALUES (?, ?, ?, ?)", basket_, bedroom_, start_time_, end_time_)
+	_, err = tools.ExecuteQuery(db, "INSERT INTO BASKET_BEDROOM (basket, bedroom, start_time, end_time) VALUES (?, ?, ?, ?)", basket_, bedroom_, start_time_, end_time_)
 	if err != nil {
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
