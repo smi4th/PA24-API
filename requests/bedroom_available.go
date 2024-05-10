@@ -44,7 +44,7 @@ func BedroomAvailableGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 
-	result := tools.PeriodeOverlap(db, "RESERVATION_BEDROOM", "start_time", "end_time", "bed_room", bedroom_, start_time_, end_time_)
+	result := tools.PeriodeOverlap(db, "BASKET_BEDROOM", "start_time", "end_time", "bedroom", bedroom_, start_time_, end_time_)
 
 	// Checking if the house is available
 	jsonResponse := `{"available": true}`
