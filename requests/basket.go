@@ -73,16 +73,7 @@ func BasketPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Sending the response
-	jsonResponse := `{"message": "Basket created", `
-
-	// Adding the return fields of the query
-	fields, err := BasketGetAll(db, uuid, false)
-	if err != nil {
-		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-		return
-	}
-
-	jsonResponse += fields + `}`
+	jsonResponse := `{"message": "Basket created", "uuid": "` + uuid + `"}`
 	tools.JsonResponse(w, 201, jsonResponse)
 
 }
@@ -113,7 +104,8 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	mainRequest := `SELECT
 			B.account AS ACCOUNT,
-			B.paid AS PAID
+			B.paid AS PAID,
+			B.uuid AS UUID
 		FROM BASKET AS B`
 	mainParams := []interface{}{}
 	housingRequest := `SELECT
@@ -264,16 +256,17 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		var (
 			account_ string
 			paid_ string
+			uuid_ string
 		)
 
-		err := mainResult.Scan(&account_, &paid_)
+		err := mainResult.Scan(&account_, &paid_, &uuid_)
 		if err != nil {
 			tools.ErrorLog(err.Error())
 			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 			return
 		}
 
-		jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "HOUSINGS": [`
+		jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": [`
 
 	}
 
@@ -533,6 +526,7 @@ func BasketGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
 	result, err := tools.ExecuteQuery(db, `SELECT
 	B.account AS ACCOUNT,
 	B.paid AS PAID,
+	B.uuid AS UUID,
 	
 	case when H.start_time is null then 'null' else H.start_time end AS HOUSING_startTime,
 	case when H.end_time is null then 'null' else H.end_time end AS HOUSING_endTime,
@@ -604,6 +598,7 @@ func BasketGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error)
 	var (
 		account_ string
 		paid_ string
+		uuid_ string
 		HOUSING_startTime string
 		HOUSING_endTime string
 		HOUSING_uuid string
@@ -652,11 +647,11 @@ func BasketGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error)
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&account_, &paid_, &HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account, &BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing, &SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType, &EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
+			err := result.Scan(&account_, &paid_, &uuid_, &HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account, &BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing, &SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType, &EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "HOUSING": {"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"}, "BEDROOM": {"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"}, "SERVICE": {"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"}, "EQUIPMENT": {"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"}},`
+			jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": {"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"}, "BEDROOM": {"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"}, "SERVICE": {"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"}, "EQUIPMENT": {"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"}},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -665,12 +660,12 @@ func BasketGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error)
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&account_, &paid_, &HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account, &BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing, &SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType, &EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
+			err := result.Scan(&account_, &paid_, &uuid_, &HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account, &BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing, &SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType, &EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"account": "` + account_ + `", "paid": "` + paid_ + `", "HOUSING": {"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"}, "BEDROOM": {"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"}, "SERVICE": {"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"}, "EQUIPMENT": {"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"}`, nil
+		return `"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": {"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"}, "BEDROOM": {"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"}, "SERVICE": {"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"}, "EQUIPMENT": {"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"}`, nil
 	}
 
 }
