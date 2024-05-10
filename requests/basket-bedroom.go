@@ -77,7 +77,7 @@ func BasketBedroomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the housing is available during the period
-	if tools.PeriodeOverlap(db, "BASKET_HOUSING", "start_time", "end_time", "bedroom", bedroom_, start_time_, end_time_) {
+	if tools.PeriodeOverlap(db, "BASKET_BEDROOM", "start_time", "end_time", "bedroom", bedroom_, start_time_, end_time_) {
 		tools.JsonResponse(w, 400, `{"message": "Bedroom not available during this period"}`)
 		return
 	}
