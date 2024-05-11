@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"tools"
 	"database/sql"
+	"strings"
 )
 
 func Account(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -367,17 +368,81 @@ func AccountDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	
+	testsRequests := []string{
+		"SELECT count(*) FROM `BASKET_BEDROOM` WHERE `BEDROOM` IN (SELECT `uuid` FROM `BED_ROOM` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?))",
+		"SELECT count(*) FROM `BASKET_EQUIPMENT` WHERE `EQUIPMENT` IN (SELECT `uuid` FROM `EQUIPMENT` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?))",
+		"SELECT count(*) FROM `BASKET_SERVICE` WHERE `SERVICE` IN (SELECT `uuid` FROM `SERVICES` WHERE `account` = ?)",
+		"SELECT count(*) FROM `BASKET_HOUSING` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?)",
+	}
 
-	// Deleting the Account in the database
-	result, err := tools.ExecuteQuery(db, "DELETE FROM `ACCOUNT` WHERE uuid = ?", uuid_)
+	for _, request := range testsRequests {
+		result, err := tools.ExecuteQuery(db, request, uuid_)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+		defer result.Close()
+
+		var count string
+		for result.Next() {
+			err := result.Scan(&count)
+			if err != nil {
+				tools.ErrorLog(err.Error())
+				tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+				return
+			}
+		}
+
+		if count != "0" {
+			tools.JsonResponse(w, 400, `{"message": "This account has ` + count + " " + strings.Split(strings.Split(request, "FROM `")[1], "`")[0] + ` in some baskets"}`)
+			return
+		}
+	}
+
+	deleteRequests := []string{
+		"DELETE FROM `MESSAGE` WHERE `author` = ?",
+		"DELETE FROM `MESSAGE` WHERE `account` = ?",
+		"DELETE FROM `REVIEW` WHERE `account` = ?",
+		"DELETE FROM `REVIEW` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?)",
+		"DELETE FROM `REVIEW` WHERE `SERVICE` IN (SELECT `uuid` FROM `SERVICES` WHERE `account` = ?)",
+		"DELETE FROM `REVIEW` WHERE `BEDROOM` IN (SELECT `uuid` FROM `BED_ROOM` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?))",
+		"DELETE FROM `BASKET_SERVICE` WHERE `BASKET` IN (SELECT `uuid` FROM `BASKET` WHERE `account` = ?)",
+		"DELETE FROM `BASKET_HOUSING` WHERE `BASKET` IN (SELECT `uuid` FROM `BASKET` WHERE `account` = ?)",
+		"DELETE FROM `BASKET_BEDROOM` WHERE `BASKET` IN (SELECT `uuid` FROM `BASKET` WHERE `account` = ?)",
+		"DELETE FROM `BASKET_EQUIPMENT` WHERE `BASKET` IN (SELECT `uuid` FROM `BASKET` WHERE `account` = ?)",
+		"DELETE FROM `BASKET_SERVICE` WHERE `BASKET` IN (SELECT `uuid` FROM `BASKET` WHERE `account` = ?)",
+		"DELETE FROM `BED_ROOM` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?)",
+		"DELETE FROM `EQUIPMENT` WHERE `HOUSING` IN (SELECT `uuid` FROM `HOUSING` WHERE `account` = ?)",
+		"DELETE FROM `HOUSING` WHERE `account` = ?",
+		"DELETE FROM `DISPONIBILITY` WHERE `account` = ?",
+		"DELETE FROM `SERVICES` WHERE `account` = ?",
+		"DELETE FROM `ACCOUNT_SUBSCRIPTION` WHERE `account` = ?",
+		"DELETE FROM `ACCOUNT` WHERE `uuid` = ?",
+	}
+
+	// Create the transaction
+	tx, err := db.Begin()
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
 	}
-	defer result.Close()
 
-	// Creating the response
+	for _, request := range deleteRequests {
+		_, err := tx.Exec(request, uuid_)
+		if err != nil {
+			tx.Rollback()
+			tools.ErrorLog(err.Error())
+			tools.ErrorLog(request)
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+	}
+
+	tx.Commit()
+	
+	// Creating the response	
 	jsonResponse := `{"message": "Account deleted", "uuid": "` + uuid_ + `"}`
 
 	// Sending the response
