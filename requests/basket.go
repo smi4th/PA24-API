@@ -12,6 +12,8 @@ func Basket(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		BasketPost(w, r, db)
 	case "GET":
 		BasketGet(w, r, db)
+	case "PUT":
+		BasketPut(w, r, db)
 	case "DELETE":
 		BasketDelete(w, r, db)
 	default:
@@ -445,6 +447,51 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	tools.JsonResponse(w, 200, jsonResponse)
+
+}
+
+func BasketPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+
+	body := tools.ReadBody(r)
+
+	tools.RequestLog(r, body)
+
+	// Checking if the body contains the required fields
+	if tools.AtLeastOneValueInBody(body, `paid`) || tools.ValuesNotInQuery(tools.ReadQuery(r), `uuid`) {
+		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
+		return
+	}
+
+	uuid := tools.ReadQuery(r)["uuid"]
+	paid := tools.BodyValueToString(body, "paid")
+
+	// Checking if the value is empty
+	if tools.ValueIsEmpty(uuid) {
+		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
+		return
+	}
+
+	// Checking if the basket exists
+	if !tools.ElementExists(db, "BASKET", "uuid", uuid) {
+		tools.JsonResponse(w, 404, `{"message": "Basket not found"}`)
+		return
+	}
+
+	// Checking if the account has the right to modify the basket
+	if tools.GetUUID(r, db) != tools.GetElement(db, "BASKET", "account", "uuid", uuid) && !tools.IsAdmin(r, db) {
+		tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
+		return
+	}
+
+	// Updating the basket in the database
+	_, err := db.Exec("UPDATE BASKET SET paid = ? WHERE uuid = ?", paid, uuid)
+	if err != nil {
+		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+		return
+	}
+
+	// Sending the response
+	tools.JsonResponse(w, 200, `{"message": "Basket updated"}`)
 
 }
 
