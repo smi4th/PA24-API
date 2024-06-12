@@ -203,3 +203,32 @@ CREATE TABLE IF NOT EXISTS `MESSAGE` (
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
     FOREIGN KEY (`author`) REFERENCES `ACCOUNT`(`uuid`)
 );
+
+CREATE TABLE IF NOT EXISTS `STATUS` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `status` VARCHAR(45) NOT NULL -- UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS `TICKET` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `title` VARCHAR(45) NOT NULL,
+    `description` TEXT NOT NULL,
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
+    `status` VARCHAR(40) NOT NULL,
+    `account` VARCHAR(40) NOT NULL,
+    `support` VARCHAR(40) DEFAULT NULL,
+    FOREIGN KEY (`status`) REFERENCES `STATUS`(`uuid`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`support`) REFERENCES `ACCOUNT`(`uuid`)
+);
+
+CREATE TABLE IF NOT EXISTS `TMESSAGE` (
+    `uuid` VARCHAR(40) NOT NULL,
+    `content` TEXT NOT NULL,
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
+    `ticket` VARCHAR(40) NOT NULL,
+    `account` VARCHAR(40) NOT "NULL",
+    PRIMARY KEY (`ticket`, `account`, `uuid`),
+    FOREIGN KEY (`ticket`) REFERENCES `TICKET`(`uuid`),
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
+);

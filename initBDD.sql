@@ -102,3 +102,18 @@ INSERT INTO MESSAGE (uuid, creation_date, content, account, author, imgPath) VAL
 ('1', NOW(), 'Bonjour, je suis intéressé par votre logement.', '1', '2', 'NULL'),
 ('2', NOW(), 'Bonjour, merci pour votre message.', '2', '1', 'NULL'),
 ('3', NOW(), 'Pouvons-nous discuter des détails ?', '3', '1', 'NULL');
+
+INSERT INTO STATUS (uuid, status) VALUES
+('1', 'En attente'),
+('2', 'En cours'),
+('3', 'Terminé');
+
+INSERT INTO TICKET (uuid, title, description, creation_date, status, account, support) VALUES
+('1', 'Problème de connexion', "Je n'arrive pas à me connecter à mon compte.", NOW(), '1', '1', '3'),
+('2', 'Problème de paiement', "Je n'arrive pas à payer ma commande.", NOW(), '2', '2', '3'),
+('3', 'Problème de réservation', "Je n'arrive pas à réserver un logement.", NOW(), '3', '3', '3');
+
+INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
+('1', 'Avez-vous essayé de réinitialiser votre mot de passe ?', NOW(), '1', '3'),
+('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3'),
+('3', 'Avez-vous essayé de vider votre cache ?', NOW(), '3', '3');

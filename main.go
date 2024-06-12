@@ -87,8 +87,14 @@ func main() {
 			requests.ServicesTypes(w, r, db)
 		case "/services":
 			requests.Services(w, r, db)
+		case "/status":
+			requests.Status(w, r, db)
 		case "/subscription":
 			requests.Subscription(w, r, db)
+		case "/ticket":
+			requests.Ticket(w, r, db)
+		case "/tmessage":
+			requests.TMessage(w, r, db)
 		default:
 			tools.JsonResponse(w, 404, `{"message": "Not found"}`)
 		}
