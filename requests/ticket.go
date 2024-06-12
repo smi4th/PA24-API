@@ -71,7 +71,7 @@ func TicketPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Ticket in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `TICKET` (`uuid`, `title`, `description`, `status`, `account`) VALUES (?, ?, ?, ?, ?)", uuid_, title_, description_, status_, account_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `TICKET` (`uuid`, `title`, `description`, `status`, `account`, `support`) VALUES (?, ?, ?, ?, ?, NULL)", uuid_, title_, description_, status_, account_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
