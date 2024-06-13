@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  newImage:
+    runs-on: self-hosted
+    name: Create a new image 
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Use the output from the `hello` step
+      - name: Create a new image
+        run: docker build -t dev-api-image .
+  deployImage:
+      runs-on: self-hosted
+      name: Deploy the new image
+      steps:
+        - name: Update the Traefik configuration
+          run: cd /var/reverse-proxy && docker compose up -d --scale dev-api=0 && docker compose up -d --scale dev-api=1
