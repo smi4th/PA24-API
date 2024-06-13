@@ -14,6 +14,6 @@ jobs:
         uses: actions/checkout@v4
       # Use the output from the `hello` step
       - name: Create a new image
-        run: ssh debian@pariscaretaker.fr 'cd /var/API && docker build -t dev-api-image .'
+        run: ssh debian@pariscaretaker.fr 'cd /var/API && sudo docker build -t dev-api-image .'
       - name: Update the Traefik configuration
-        run: ssh debian@pariscaretaker.fr 'cd /var/reverse-proxy && docker compose up -d --scale dev-api=0 && docker compose up -d --scale dev-api=1'
+        run: ssh debian@pariscaretaker.fr 'cd /var/reverse-proxy && sudo docker compose up -d'
