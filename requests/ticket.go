@@ -103,7 +103,7 @@ func TicketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `all`, `title`, `description`, `status`, `account`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `all`, `title`, `description`, `status`, `account`, `support`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
