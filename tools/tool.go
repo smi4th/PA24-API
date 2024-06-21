@@ -137,7 +137,7 @@ func getConfig() map[string]map[string]string {
 	configMap["database"]["database"] = os.Getenv("MYSQL_DATABASE")
 
 	// the password is a file stored "/run/secrets/mysql_password"
-	password, err := ioutil.ReadFile("/run/secrets/mysql_password")
+	password, err := ioutil.ReadFile(os.Getenv("MYSQL_PASSWORD"))
 	if err != nil {
 		ErrorLog(err.Error())
 		return nil
