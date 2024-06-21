@@ -131,11 +131,11 @@ func getConfig() map[string]map[string]string {
 
 	configMap = make(map[string]map[string]string)
 	configMap["database"] = make(map[string]string)
-	configMap["database"]["host"] = config.Database.Host
-	configMap["database"]["port"] = config.Database.Port
-	configMap["database"]["username"] = config.Database.Username
-	configMap["database"]["password"] = config.Database.Password
-	configMap["database"]["database"] = config.Database.Database
+	configMap["database"]["host"] = os.Getenv("DB_HOST")
+	configMap["database"]["port"] = os.Getenv("DB_PORT")
+	configMap["database"]["username"] = os.Getenv("DB_USERNAME")
+	configMap["database"]["password"] = os.Getenv("DB_PASSWORD")
+	configMap["database"]["database"] = os.Getenv("DB_DATABASE")
 
 	configMap["logs"] = make(map[string]string)
 	configMap["logs"]["path"] = config.Logs.Path
