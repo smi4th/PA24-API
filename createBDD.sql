@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT` (
     `first_name` VARCHAR(45) NOT NULL,
     `last_name` VARCHAR(45) NOT NULL,
     `email` VARCHAR(45) NOT NULL, -- UNIQUE
-    `creation_date` DATE DEFAULT "2024-01-01 00:00:00", -- AUTO GEN
+    `creation_date` DATE DEFAULT NOW(), -- AUTO GEN
     `imgPath` VARCHAR(255),
     `account_type` VARCHAR(40) NOT NULL,
     `provider` VARCHAR(40),
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
-    `start_date` DATE DEFAULT "2024-01-01 00:00:00", -- AUTO GEN
+    `start_date` DATE DEFAULT NOW(), -- AUTO GEN
     `account` VARCHAR(40) NOT NULL,
     `subscription` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`account`, `subscription`),
@@ -73,8 +73,8 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
 
 CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
-    `start_date` DATETIME DEFAULT "2024-01-01 00:00:00",
-    `end_date` DATETIME DEFAULT "2024-01-01 00:00:00",
+    `start_date` DATETIME DEFAULT NOW(),
+    `end_date` DATETIME DEFAULT NOW(),
     `account` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
 );
@@ -150,8 +150,8 @@ CREATE TABLE IF NOT EXISTS `BASKET_EQUIPMENT` (
 );
 
 CREATE TABLE IF NOT EXISTS `BASKET_BEDROOM` (
-    `start_time` DATE DEFAULT "2024-01-01 00:00:00",
-    `end_time` DATE DEFAULT "2024-01-01 00:00:00",
+    `start_time` DATE DEFAULT NOW(),
+    `end_time` DATE DEFAULT NOW(),
     `basket` VARCHAR(40) NOT NULL,
     `bedroom` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`basket`, `bedroom`),
@@ -160,8 +160,8 @@ CREATE TABLE IF NOT EXISTS `BASKET_BEDROOM` (
 );
 
 CREATE TABLE IF NOT EXISTS `BASKET_HOUSING` (
-    `start_time` DATE DEFAULT "2024-01-01 00:00:00",
-    `end_time` DATE DEFAULT "2024-01-01 00:00:00",
+    `start_time` DATE DEFAULT NOW(),
+    `end_time` DATE DEFAULT NOW(),
     `basket` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`basket`, `housing`),
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `BASKET_HOUSING` (
 );
 
 CREATE TABLE IF NOT EXISTS `BASKET_SERVICE` (
-    `start_time` DATETIME DEFAULT "2024-01-01 00:00:00",
+    `start_time` DATETIME DEFAULT NOW(),
     `basket` VARCHAR(40) NOT NULL,
     `service` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`basket`, `service`),
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `REVIEW` (
 
 CREATE TABLE IF NOT EXISTS `MESSAGE` (
     `uuid` VARCHAR(40) NOT NULL,
-    `creation_date` DATETIME DEFAULT "2024-01-01 00:00:00", -- AUTO GEN
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
     `content` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
     `account` VARCHAR(40) NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS `TICKET` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `title` VARCHAR(45) NOT NULL,
     `description` TEXT NOT NULL,
-    `creation_date` DATETIME DEFAULT "2024-01-01 00:00:00", -- AUTO GEN
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
     `status` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `support` VARCHAR(40) DEFAULT NULL,
@@ -225,7 +225,7 @@ CREATE TABLE IF NOT EXISTS `TICKET` (
 CREATE TABLE IF NOT EXISTS `TMESSAGE` (
     `uuid` VARCHAR(40) NOT NULL,
     `content` TEXT NOT NULL,
-    `creation_date` DATETIME DEFAULT "2024-01-01 00:00:00", -- AUTO GEN
+    `creation_date` DATETIME DEFAULT NOW(), -- AUTO GEN
     `ticket` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     PRIMARY KEY (`ticket`, `account`, `uuid`),

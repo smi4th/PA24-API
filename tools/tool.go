@@ -131,11 +131,18 @@ func getConfig() map[string]map[string]string {
 
 	configMap = make(map[string]map[string]string)
 	configMap["database"] = make(map[string]string)
-	configMap["database"]["host"] = config.Database.Host
-	configMap["database"]["port"] = config.Database.Port
-	configMap["database"]["username"] = config.Database.Username
-	configMap["database"]["password"] = config.Database.Password
-	configMap["database"]["database"] = config.Database.Database
+	configMap["database"]["host"] = os.Getenv("DB_HOST")
+	configMap["database"]["port"] = os.Getenv("DB_PORT")
+	configMap["database"]["username"] = os.Getenv("MYSQL_USER")
+	configMap["database"]["database"] = os.Getenv("MYSQL_DATABASE")
+
+	// the password is a file stored "/run/secrets/mysql_password"
+	password, err := ioutil.ReadFile(os.Getenv("MYSQL_PASSWORD"))
+	if err != nil {
+		ErrorLog(err.Error())
+		return nil
+	}
+	configMap["database"]["password"] = string(password)
 
 	configMap["logs"] = make(map[string]string)
 	configMap["logs"]["path"] = config.Logs.Path
