@@ -4,6 +4,3 @@
 
 # credentials
 *.env
-
-# Logs
-logs/*.log

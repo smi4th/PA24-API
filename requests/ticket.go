@@ -103,7 +103,7 @@ func TicketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `all`, `title`, `description`, `status`, `account`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `all`, `title`, `description`, `status`, `account`, `support`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -355,7 +355,7 @@ func TicketGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "description": "` + description_ + `", "status": "` + status_ + `", "account": "` + account_ + `", "support": "` + support_ + `", "creation_date": "` + creation_date_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "title": "` + title_ + `", "description": "` + description_ + `", "creation_date": "` + creation_date_ + `", "status": "` + status_ + `", "account": "` + account_ + `", "support": "` + support_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
