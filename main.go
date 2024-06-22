@@ -10,10 +10,6 @@ func main() {
 
 	// Initialize the database connection
 	db := tools.InitDatabaseConnection()
-	if db == nil {
-		tools.ErrorLog("Cannot connect to the database")
-		return
-	}
 	defer tools.CloseDatabaseConnection(db)
 
 	// Handle the requests
