@@ -373,7 +373,7 @@ func GetUUID(r *http.Request, db *sql.DB) string {
 
 func InitDatabaseConnection() *sql.DB {
 	config := getConfig()
-	db, err := sql.Open("mariadb", config["database"]["username"] + ":" + config["database"]["password"] + "@tcp(" + config["database"]["host"] + ":" + config["database"]["port"] + ")/" + config["database"]["database"])
+	db, err := sql.Open("mysql", config["database"]["username"] + ":" + config["database"]["password"] + "@tcp(" + config["database"]["host"] + ":" + config["database"]["port"] + ")/" + config["database"]["database"])
 	if err != nil {
 		ErrorLog(err.Error())
 		return nil
