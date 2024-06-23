@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"requests"
 	"tools"
+	"fmt"
 )
 
 func main() {
@@ -11,6 +12,7 @@ func main() {
 	// Initialize the database connection
 	db := tools.InitDatabaseConnection()
 	if db == nil {
+		fmt.Println("Failed to connect to the database")
 		tools.ErrorLog("Failed to connect to the database")
 		return
 	}
