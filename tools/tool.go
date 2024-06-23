@@ -41,7 +41,7 @@ func log(color string, message string) {
 
 func ErrorLog(message string) {
 	if configMap == nil {
-		getConfig()
+		GetConfig()
 	}
 	// if the log level contains "error"
 	if strings.Contains(configMap["logs"]["level"], "error") {
@@ -51,7 +51,7 @@ func ErrorLog(message string) {
 
 func InfoLog(message string) {
 	if configMap == nil {
-		getConfig()
+		GetConfig()
 	}
 	// if the log level contains "info"
 	if strings.Contains(configMap["logs"]["level"], "info") {
@@ -61,7 +61,7 @@ func InfoLog(message string) {
 
 func ResponseLog(status int, body string) {
 	if configMap == nil {
-		getConfig()
+		GetConfig()
 	}
 	// if the log level contains "response"
 	if strings.Contains(configMap["logs"]["level"], "response") {
@@ -71,7 +71,7 @@ func ResponseLog(status int, body string) {
 
 func RequestLog(r *http.Request, body map[string]interface{}) {
 	if configMap == nil {
-		getConfig()
+		GetConfig()
 	}
 	// if the log level contains "request"
 	if strings.Contains(configMap["logs"]["level"], "request") {
@@ -81,7 +81,7 @@ func RequestLog(r *http.Request, body map[string]interface{}) {
 
 func SQLLog(query string) {
 	if configMap == nil {
-		getConfig()
+		GetConfig()
 	}
 	// if the log level contains "sql"
 	if strings.Contains(configMap["logs"]["level"], "sql") {
@@ -112,7 +112,7 @@ type configJson struct {
 
 var configMap map[string]map[string]string
 
-func getConfig() map[string]map[string]string {
+func GetConfig() map[string]map[string]string {
 	jsonFile, err := os.Open("config.json")
 	if err != nil {
 		ErrorLog(err.Error())
@@ -372,7 +372,7 @@ func GetUUID(r *http.Request, db *sql.DB) string {
 */
 
 func InitDatabaseConnection() *sql.DB {
-	config := getConfig()
+	config := GetConfig()
 	db, err := sql.Open("mysql", config["database"]["username"] + ":" + config["database"]["password"] + "@tcp(" + config["database"]["host"] + ":" + config["database"]["port"] + ")/" + config["database"]["database"])
 	if err != nil {
 		ErrorLog(err.Error())
