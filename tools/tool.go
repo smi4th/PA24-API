@@ -374,7 +374,6 @@ func GetUUID(r *http.Request, db *sql.DB) string {
 func InitDatabaseConnection() *sql.DB {
 	config := GetConfig()
 	db, err := sql.Open("mysql", config["database"]["username"] + ":" + config["database"]["password"] + "@tcp(" + config["database"]["host"] + ":" + config["database"]["port"] + ")/" + config["database"]["database"])
-	fmt.Println(config["database"]["username"] + ":" + config["database"]["password"] + "@tcp(" + config["database"]["host"] + ":" + config["database"]["port"] + ")/" + config["database"]["database"])
 	if err != nil {
 		ErrorLog(err.Error())
 		return nil
