@@ -31,10 +31,10 @@ INSERT INTO SERVICES_TYPES (uuid, type, imgPath) VALUES
 ('2', 'Service2', 'NULL'),
 ('3', 'Service3', 'NULL');
 
-INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration) VALUES
-('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30'),
-('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00'),
-('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30');
+INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration, token) VALUES
+('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30', '123456'),
+('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00', '654321'),
+('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30', '987654');
 
 INSERT INTO DISPONIBILITY (uuid, start_date, end_date, account) VALUES
 ('1', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), "1"),
@@ -49,7 +49,17 @@ INSERT INTO HOUSE_TYPE (uuid, type, imgPath) VALUES
 INSERT INTO HOUSING (uuid, surface, price, validated, street_nb, city, zip_code, street, description, house_type, account, imgPath, title) VALUES
 ('1', 100.00, 200000.00, true, '123', 'Paris', '75001', 'Rue de Rivoli', 'Belle maison individuelle', '1', '1', 'NULL', 'Maison de charme'),
 ('2', 75.50, 150000.00, false, '456', 'Lyon', '69001', 'Rue de la République', 'Appartement lumineux', '2', '2', 'NULL', 'Appartement cosy'),
-('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL', 'Maison familiale');
+('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL', 'Maison familiale'),
+('4', 90.00, 180000.00, true, '321', 'Bordeaux', '33000', 'Rue Sainte-Catherine', 'Charmant appartement au centre-ville', '2', '3', 'NULL', 'Appartement charmant'),
+('5', 65.25, 120000.00, false, '654', 'Nice', '06000', 'Promenade des Anglais', 'Studio avec vue sur mer', '1', '4', 'NULL', 'Studio avec vue'),
+('6', 110.50, 250000.00, true, '987', 'Lille', '59000', 'Rue Faidherbe', 'Maison spacieuse avec jardin', '3', '2', 'NULL', 'Maison spacieuse'),
+('7', 80.00, 160000.00, true, '101', 'Toulouse', '31000', 'Place du Capitole', 'Appartement moderne et lumineux', '2', '5', 'NULL', 'Appartement moderne'),
+('8', 95.75, 190000.00, false, '202', 'Nantes', '44000', 'Rue Crébillon', 'Maison rénovée avec terrasse', '3', '1', 'NULL', 'Maison rénovée'),
+('9', 70.50, 140000.00, true, '303', 'Strasbourg', '67000', 'Place Kléber', 'Appartement ancien avec charme', '1', '3', 'NULL', 'Appartement ancien'),
+('10', 85.00, 170000.00, true, '404', 'Rennes', '35000', 'Rue Saint-Michel', 'Maison de ville bien située', '2', '4', 'NULL', 'Maison de ville'),
+('11', 105.25, 220000.00, false, '505', 'Montpellier', '34000', 'Place de la Comédie', 'Grande maison familiale', '3', '2', 'NULL', 'Maison familiale'),
+('12', 60.00, 130000.00, true, '606', 'Reims', '51100', 'Rue de Vesle', 'Appartement central et calme', '1', '5', 'NULL', 'Appartement central'),
+('13', 115.75, 260000.00, true, '707', 'Dijon', '21000', 'Place de la Libération', 'Maison moderne avec piscine', '3', '1', 'NULL', 'Maison moderne');
 
 INSERT INTO EQUIPMENT_TYPE (uuid, name, imgPath) VALUES
 ('1', 'Literie', 'NULL'),
@@ -101,7 +111,20 @@ INSERT INTO REVIEW (uuid, content, note, account, bedroom) VALUES
 INSERT INTO MESSAGE (uuid, creation_date, content, account, author, imgPath) VALUES
 ('1', NOW(), 'Bonjour, je suis intéressé par votre logement.', '1', '2', 'NULL'),
 ('2', NOW(), 'Bonjour, merci pour votre message.', '2', '1', 'NULL'),
-('3', NOW(), 'Pouvons-nous discuter des détails ?', '3', '1', 'NULL');
+('3', NOW(), 'Pouvons-nous discuter des détails ?', '3', '1', 'NULL'),
+('4', '2024-06-23 16:20:00', 'Salut, comment ça va ?', '1', '3', 'NULL'),
+('5', '2024-06-23 16:21:00', 'Bien, merci. Et toi ?', '2', '3', 'NULL'),
+('6', '2024-06-23 16:22:00', 'Je vais bien aussi.', '3', '2', 'NULL'),
+('7', '2024-06-23 16:23:00', "J\'ai vu votre annonce, elle m\'intéresse.", '1', '4', 'NULL'),
+('8', '2024-06-23 16:24:00', 'Merci pour votre intérêt.', '2', '4', 'NULL'),
+('9', '2024-06-23 16:25:00', 'Pouvez-vous me donner plus de détails ?', '3', '4', 'NULL'),
+('10', '2024-06-23 16:26:00', 'Bien sûr, quels détails souhaitez-vous ?', '4', '5', 'NULL'),
+('11', '2024-06-23 16:27:00', 'Les caractéristiques du logement, par exemple.', '5', '4', 'NULL'),
+('12', '2024-06-23 16:28:00', "D\'accord, je vous envoie les informations.", '1', '5', 'NULL'),
+('13', '2024-06-23 16:29:00', 'Merci beaucoup.', '5', '1', 'NULL'),
+('14', '2024-06-23 16:30:00', 'Vous êtes le bienvenu.', '2', '5', 'NULL'),
+('15', '2024-06-23 16:31:00', 'Avez-vous des questions supplémentaires ?', '4', '2', 'NULL'),
+('16', '2024-06-23 16:32:00', 'Non, tout est clair. Merci.', '3', '2', 'NULL');
 
 INSERT INTO STATUS (uuid, status) VALUES
 ('1', 'En attente'),

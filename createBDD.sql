@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
     `description` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
     `duration` TIME NOT NULL,
+    `token` VARCHAR(64) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
