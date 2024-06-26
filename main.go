@@ -38,6 +38,11 @@ func main() {
 			return
 		}
 
+		if r.URL.Path == "/housing" && r.Method == "GET" {
+			requests.HousingGet(w, r, db)
+			return
+		}
+		
 		// Check if the user is authenticated
 		if !tools.IsAuthenticated(r, db) {
 			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
