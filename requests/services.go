@@ -80,7 +80,7 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Services in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_, token)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token`) VALUES (?, ?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_, token)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
