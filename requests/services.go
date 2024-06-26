@@ -75,13 +75,12 @@ func ServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	
-
-	
+	token := tools.GenerateToken()
 
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Services in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SERVICES` (`uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token`) VALUES (?, ?, ?, ?, ?, ?)", uuid_, price_, description_, account_, service_type_, imgPath_, token)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -113,12 +112,12 @@ func ServicesGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `all`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token`, `all`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES`"
+	request := "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token` FROM `SERVICES`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `SERVICES`"
 	var countParams []interface{}
@@ -340,7 +339,7 @@ func ServicesDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func ServicesGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath` FROM `SERVICES` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `price`, `description`, `account`, `service_type`, `imgPath`, `token` FROM `SERVICES` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -350,18 +349,18 @@ func ServicesGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) 
 }
 
 func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, price_, description_, account_, service_type_, imgPath_ string
+	var uuid_, price_, description_, account_, service_type_, imgPath_, token_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
+			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_, &token_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `", "token": "` + token_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -370,11 +369,11 @@ func ServicesGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, erro
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_)
+			err := result.Scan(&uuid_, &price_, &description_, &account_, &service_type_, &imgPath_, &token_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "account": "` + account_ + `", "service_type": "` + service_type_ + `", "imgPath": "` + imgPath_ + `", "token": "` + token_ + `"`, nil
 	}
 }
