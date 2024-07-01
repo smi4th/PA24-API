@@ -121,12 +121,12 @@ func BedRoomGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, "all", "imgPath", "title") {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, "all", "imgPath", "title", `taxes`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
 
-	request := "SELECT `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title` FROM `BED_ROOM`"
+	request := "SELECT `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title`, `taxes` FROM `BED_ROOM`"
 	var params []interface{}
 	countRequest := "SELECT COUNT(*) FROM `BED_ROOM`"
 	var countParams []interface{}
@@ -202,7 +202,7 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `nbPlaces`, `price`, `description`, `validated`, `housing`, "imgPath", "title") || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `nbPlaces`, `price`, `description`, `validated`, `housing`, "imgPath", "title", `taxes`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -355,18 +355,18 @@ func BedRoomGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
 }
 
 func BedRoomGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, nbPlaces_, price_, description_, validated_, housing_, imgPath_, title_ string
+	var uuid_, nbPlaces_, price_, description_, validated_, housing_, imgPath_, title_, taxes_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &nbPlaces_, &price_, &description_, &validated_, &housing_, &imgPath_, &title_)
+			err := result.Scan(&uuid_, &nbPlaces_, &price_, &description_, &validated_, &housing_, &imgPath_, &title_, &taxes_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "nbPlaces": "` + nbPlaces_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "validated": "` + validated_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `", "title": "` + title_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "nbPlaces": "` + nbPlaces_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "validated": "` + validated_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `", "title": "` + title_ + `", "taxes": "` + taxes_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -375,11 +375,11 @@ func BedRoomGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &nbPlaces_, &price_, &description_, &validated_, &housing_, &imgPath_, &title_)
+			err := result.Scan(&uuid_, &nbPlaces_, &price_, &description_, &validated_, &housing_, &imgPath_, &title_, &taxes_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "nbPlaces": "` + nbPlaces_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "validated": "` + validated_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `", "title": "` + title_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "nbPlaces": "` + nbPlaces_ + `", "price": "` + price_ + `", "description": "` + description_ + `", "validated": "` + validated_ + `", "housing": "` + housing_ + `", "imgPath": "` + imgPath_ + `", "title": "` + title_ + `", "taxes": "` + taxes_ + `"`, nil
 	}
 }

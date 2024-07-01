@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
     `imgPath` VARCHAR(255),
     `duration` TIME NOT NULL,
     `token` VARCHAR(64) NOT NULL,
+    `validated` BOOLEAN NOT NULL DEFAULT "false",
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `HOUSING` (
     `street` VARCHAR(45) NOT NULL,
     `description` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
+    `taxes` DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
     `house_type` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`house_type`) REFERENCES `HOUSE_TYPE`(`uuid`),
@@ -131,6 +133,7 @@ CREATE TABLE IF NOT EXISTS `BED_ROOM` (
     `description` TEXT NOT NULL,
     `validated` BOOLEAN NOT NULL,
     `imgPath` VARCHAR(255),
+    `taxes` DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
     `housing` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
 );
