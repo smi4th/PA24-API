@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
     `imgPath` VARCHAR(255),
     `duration` TIME NOT NULL,
     `token` VARCHAR(64) NOT NULL,
-    `validated` BOOLEAN NOT NULL DEFAULT "false",
+    `validated` BOOLEAN NOT NULL DEFAULT false,
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
