@@ -270,173 +270,177 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": [`
 
-	}
+		housingResult, err := tools.ExecuteQuery(db, housingRequest, housingParams...)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+		defer housingResult.Close()
 
-	housingResult, err := tools.ExecuteQuery(db, housingRequest, housingParams...)
-	if err != nil {
-		tools.ErrorLog(err.Error())
-		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-		return
-	}
-	defer housingResult.Close()
+		for housingResult.Next() {
+			var (
+				HOUSING_startTime string
+				HOUSING_endTime string
+				HOUSING_uuid string
+				HOUSING_surface string
+				HOUSING_price string
+				HOUSING_validated string
+				HOUSING_streetNb string
+				HOUSING_city string
+				HOUSING_zipCode string
+				HOUSING_street string
+				HOUSING_description string
+				HOUSING_imgPath string
+				HOUSING_houseType string
+				HOUSING_account string
+			)
 
-	for housingResult.Next() {
-		var (
-			HOUSING_startTime string
-			HOUSING_endTime string
-			HOUSING_uuid string
-			HOUSING_surface string
-			HOUSING_price string
-			HOUSING_validated string
-			HOUSING_streetNb string
-			HOUSING_city string
-			HOUSING_zipCode string
-			HOUSING_street string
-			HOUSING_description string
-			HOUSING_imgPath string
-			HOUSING_houseType string
-			HOUSING_account string
-		)
+			err := housingResult.Scan(&HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account)
+			if err != nil {
+				tools.ErrorLog(err.Error())
+				tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+				return
+			}
 
-		err := housingResult.Scan(&HOUSING_startTime, &HOUSING_endTime, &HOUSING_uuid, &HOUSING_surface, &HOUSING_price, &HOUSING_validated, &HOUSING_streetNb, &HOUSING_city, &HOUSING_zipCode, &HOUSING_street, &HOUSING_description, &HOUSING_imgPath, &HOUSING_houseType, &HOUSING_account)
+			if HOUSING_startTime != "NULL" {
+				jsonResponse += `{"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"},`
+			}
+
+		}
+
+		if jsonResponse[len(jsonResponse)-1] == ',' {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
+		}	
+		jsonResponse += `], "BEDROOMS": [`
+
+		bedroomResult, err := tools.ExecuteQuery(db, bedroomRequest, bedroomParams...)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+		defer bedroomResult.Close()
+
+		for bedroomResult.Next() {
+			var (
+				BEDROOM_startTime string
+				BEDROOM_endTime string
+				BEDROOM_uuid string
+				BEDROOM_nbPlaces string
+				BEDROOM_price string
+				BEDROOM_description string
+				BEDROOM_validated string
+				BEDROOM_imgPath string
+				BEDROOM_housing string
+			)
+
+			err := bedroomResult.Scan(&BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing)
+			if err != nil {
+				tools.ErrorLog(err.Error())
+				tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+				return
+			}
+
+			if BEDROOM_startTime != "NULL" {
+				jsonResponse += `{"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"},`
+			}
+
+		}
+
+		if jsonResponse[len(jsonResponse)-1] == ',' {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
+		}
+		jsonResponse += `], "SERVICES": [`
+
+		serviceResult, err := tools.ExecuteQuery(db, serviceRequest, serviceParams...)
 		if err != nil {
 			tools.ErrorLog(err.Error())
 			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 			return
 		}
 
-		if HOUSING_startTime != "NULL" {
-			jsonResponse += `{"startTime": "` + HOUSING_startTime + `", "endTime": "` + HOUSING_endTime + `", "uuid": "` + HOUSING_uuid + `", "surface": "` + HOUSING_surface + `", "price": "` + HOUSING_price + `", "validated": "` + HOUSING_validated + `", "streetNb": "` + HOUSING_streetNb + `", "city": "` + HOUSING_city + `", "zipCode": "` + HOUSING_zipCode + `", "street": "` + HOUSING_street + `", "description": "` + HOUSING_description + `", "imgPath": "` + HOUSING_imgPath + `", "houseType": "` + HOUSING_houseType + `", "account": "` + HOUSING_account + `"},`
+		for serviceResult.Next() {
+			var (
+				SERVICE_startTime string
+				SERVICE_endTime string
+				SERVICE_uuid string
+				SERVICE_price string
+				SERVICE_description string
+				SERVICE_imgPath string
+				SERVICE_duration string
+				SERVICE_account string
+				SERVICE_serviceType string
+			)
+
+			err := serviceResult.Scan(&SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType)
+			if err != nil {
+				tools.ErrorLog(err.Error())
+				tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+				return
+			}
+
+			if SERVICE_startTime != "NULL" {
+			
+				jsonResponse += `{"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"},`
+			
+			}
+
 		}
 
-	}
+		if jsonResponse[len(jsonResponse)-1] == ',' {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
+		}
+		jsonResponse += `], "EQUIPMENTS": [`
 
-	if jsonResponse[len(jsonResponse)-1] == ',' {
-		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
-	}	
-	jsonResponse += `], "BEDROOMS": [`
-
-	bedroomResult, err := tools.ExecuteQuery(db, bedroomRequest, bedroomParams...)
-	if err != nil {
-		tools.ErrorLog(err.Error())
-		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-		return
-	}
-	defer bedroomResult.Close()
-
-	for bedroomResult.Next() {
-		var (
-			BEDROOM_startTime string
-			BEDROOM_endTime string
-			BEDROOM_uuid string
-			BEDROOM_nbPlaces string
-			BEDROOM_price string
-			BEDROOM_description string
-			BEDROOM_validated string
-			BEDROOM_imgPath string
-			BEDROOM_housing string
-		)
-
-		err := bedroomResult.Scan(&BEDROOM_startTime, &BEDROOM_endTime, &BEDROOM_uuid, &BEDROOM_nbPlaces, &BEDROOM_price, &BEDROOM_description, &BEDROOM_validated, &BEDROOM_imgPath, &BEDROOM_housing)
+		equipmentResult, err := tools.ExecuteQuery(db, equipmentRequest, equipmentParams...)
 		if err != nil {
 			tools.ErrorLog(err.Error())
 			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 			return
 		}
 
-		if BEDROOM_startTime != "NULL" {
-			jsonResponse += `{"startTime": "` + BEDROOM_startTime + `", "endTime": "` + BEDROOM_endTime + `", "uuid": "` + BEDROOM_uuid + `", "nbPlaces": "` + BEDROOM_nbPlaces + `", "price": "` + BEDROOM_price + `", "description": "` + BEDROOM_description + `", "validated": "` + BEDROOM_validated + `", "imgPath": "` + BEDROOM_imgPath + `", "housing": "` + BEDROOM_housing + `"},`
-		}
+		for equipmentResult.Next() {
+			var (
+				EQUIPMENT_number string
+				EQUIPMENT_uuid string
+				EQUIPMENT_name string
+				EQUIPMENT_description string
+				EQUIPMENT_price string
+				EQUIPMENT_numberTotal string
+				EQUIPMENT_imgPath string
+				EQUIPMENT_equipmentType string
+				EQUIPMENT_housing string
+			)
 
-	}
+			err := equipmentResult.Scan(&EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
+			if err != nil {
+				tools.ErrorLog(err.Error())
+				tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+				return
+			}
 
-	if jsonResponse[len(jsonResponse)-1] == ',' {
-		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
-	}
-	jsonResponse += `], "SERVICES": [`
+			if EQUIPMENT_number != "NULL" {
 
-	serviceResult, err := tools.ExecuteQuery(db, serviceRequest, serviceParams...)
-	if err != nil {
-		tools.ErrorLog(err.Error())
-		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-		return
-	}
+				jsonResponse += `{"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"},`
 
-	for serviceResult.Next() {
-		var (
-			SERVICE_startTime string
-			SERVICE_endTime string
-			SERVICE_uuid string
-			SERVICE_price string
-			SERVICE_description string
-			SERVICE_imgPath string
-			SERVICE_duration string
-			SERVICE_account string
-			SERVICE_serviceType string
-		)
-
-		err := serviceResult.Scan(&SERVICE_startTime, &SERVICE_endTime, &SERVICE_uuid, &SERVICE_price, &SERVICE_description, &SERVICE_imgPath, &SERVICE_duration, &SERVICE_account, &SERVICE_serviceType)
-		if err != nil {
-			tools.ErrorLog(err.Error())
-			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-			return
-		}
-
-		if SERVICE_startTime != "NULL" {
-		
-			jsonResponse += `{"startTime": "` + SERVICE_startTime + `", "endTime": "` + SERVICE_endTime + `", "uuid": "` + SERVICE_uuid + `", "price": "` + SERVICE_price + `", "description": "` + SERVICE_description + `", "imgPath": "` + SERVICE_imgPath + `", "duration": "` + SERVICE_duration + `", "account": "` + SERVICE_account + `", "serviceType": "` + SERVICE_serviceType + `"},`
-		
-		}
-
-	}
-
-	if jsonResponse[len(jsonResponse)-1] == ',' {
-		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
-	}
-	jsonResponse += `], "EQUIPMENTS": [`
-
-	equipmentResult, err := tools.ExecuteQuery(db, equipmentRequest, equipmentParams...)
-	if err != nil {
-		tools.ErrorLog(err.Error())
-		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-		return
-	}
-
-	for equipmentResult.Next() {
-		var (
-			EQUIPMENT_number string
-			EQUIPMENT_uuid string
-			EQUIPMENT_name string
-			EQUIPMENT_description string
-			EQUIPMENT_price string
-			EQUIPMENT_numberTotal string
-			EQUIPMENT_imgPath string
-			EQUIPMENT_equipmentType string
-			EQUIPMENT_housing string
-		)
-
-		err := equipmentResult.Scan(&EQUIPMENT_number, &EQUIPMENT_uuid, &EQUIPMENT_name, &EQUIPMENT_description, &EQUIPMENT_price, &EQUIPMENT_numberTotal, &EQUIPMENT_imgPath, &EQUIPMENT_equipmentType, &EQUIPMENT_housing)
-		if err != nil {
-			tools.ErrorLog(err.Error())
-			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-			return
-		}
-
-		if EQUIPMENT_number != "NULL" {
-
-			jsonResponse += `{"number": "` + EQUIPMENT_number + `", "uuid": "` + EQUIPMENT_uuid + `", "name": "` + EQUIPMENT_name + `", "description": "` + EQUIPMENT_description + `", "price": "` + EQUIPMENT_price + `", "numberTotal": "` + EQUIPMENT_numberTotal + `", "imgPath": "` + EQUIPMENT_imgPath + `", "equipmentType": "` + EQUIPMENT_equipmentType + `", "housing": "` + EQUIPMENT_housing + `"},`
+			}
 
 		}
 
-	}
+		if jsonResponse[len(jsonResponse)-1] == ',' {
+			jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
+		}
+		jsonResponse += `]}`
 
-	if jsonResponse[len(jsonResponse)-1] == ',' {
-		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
-	}
-	jsonResponse += `]}`
+		if nbMainResult > 0 {
+			jsonResponse += `]`
+		}
 
-	if nbMainResult > 0 {
-		jsonResponse += `]`
+		if nbMainResult != 0 {
+			jsonResponse += `,`
+		}
+
 	}
 
 	for i := 0; i < nbMainResult; i++ {
