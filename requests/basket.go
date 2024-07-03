@@ -448,22 +448,16 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 		jsonResponse += `]}`
 
-		if nbMainResult > 0 {
-			jsonResponse += `]`
-		}
-
 		if nbMainResult != 0 {
 			jsonResponse += `,`
 		}
 
 	}
 
-	for i := 0; i < nbMainResult; i++ {
-		jsonResponse += `}`
-		if i != nbMainResult-1 {
-			jsonResponse += `,`
-		}
+	if jsonResponse[len(jsonResponse)-1] == ',' {
+		jsonResponse = jsonResponse[:len(jsonResponse)-1] // Removing the last ","
 	}
+	jsonResponse += `]}`
 
 	tools.JsonResponse(w, 200, jsonResponse)
 
