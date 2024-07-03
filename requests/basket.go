@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"tools"
 	"database/sql"
+	"fmt"
 )
 
 func Basket(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -257,7 +258,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			housingRequest += " WHERE B.ACCOUNT = ?"
 			housingParams = append(housingParams, account_)
 			tools.ErrorLog(housingRequest)
-			tools.ErrorLog(housingParams)
+			fmt.println(housingParams)
 			
 			bedroomRequest += " WHERE B.ACCOUNT = ?"
 			bedroomParams = append(bedroomParams, account_)
