@@ -253,6 +253,21 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	defer mainResult.Close()
 
 	for mainResult.Next() {
+
+		nbMainResult++
+
+		var (
+			account_ string
+			paid_ string
+			uuid_ string
+		)
+
+		err := mainResult.Scan(&account_, &paid_, &uuid_)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
 		
 		if query["all"] == "true" {
 			housingRequest += " WHERE B.ACCOUNT = ?"
@@ -268,21 +283,6 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 			equipmentRequest += " WHERE B.ACCOUNT = ?"
 			equipmentParams = append(equipmentParams, account_)
-		}
-
-		nbMainResult++
-
-		var (
-			account_ string
-			paid_ string
-			uuid_ string
-		)
-
-		err := mainResult.Scan(&account_, &paid_, &uuid_)
-		if err != nil {
-			tools.ErrorLog(err.Error())
-			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
-			return
 		}
 
 		jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": [`
