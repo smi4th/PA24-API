@@ -99,7 +99,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the account exists
-	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) {
+	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) && account_ != "" {
 		tools.JsonResponse(w, 404, `{"message": "Account not found"}`)
 		return
 	}
