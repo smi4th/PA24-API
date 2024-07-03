@@ -1,0 +1,489 @@
+{
+    "count": 3,
+    "baskets": [
+        {
+            "account": "1",
+            "paid": "0",
+            "uuid": "1",
+            "HOUSING": [
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-08",
+                    "uuid": "1",
+                    "surface": "100.00",
+                    "price": "200000.00",
+                    "validated": "1",
+                    "streetNb": "123",
+                    "city": "Paris",
+                    "zipCode": "75001",
+                    "street": "Rue de Rivoli",
+                    "description": "Belle maison individuelle",
+                    "imgPath": "NULL",
+                    "houseType": "1",
+                    "account": "1"
+                },
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-15",
+                    "uuid": "2",
+                    "surface": "75.50",
+                    "price": "150000.00",
+                    "validated": "0",
+                    "streetNb": "456",
+                    "city": "Lyon",
+                    "zipCode": "69001",
+                    "street": "Rue de la République",
+                    "description": "Appartement lumineux",
+                    "imgPath": "NULL",
+                    "houseType": "2",
+                    "account": "2"
+                },
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-31",
+                    "uuid": "3",
+                    "surface": "120.75",
+                    "price": "300000.00",
+                    "validated": "1",
+                    "streetNb": "789",
+                    "city": "Marseille",
+                    "zipCode": "13001",
+                    "street": "Avenue du Prado",
+                    "description": "Maison de ville avec jardin",
+                    "imgPath": "NULL",
+                    "houseType": "3",
+                    "account": "1"
+                }
+            ],
+            "BEDROOMS": [
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-08",
+                    "uuid": "1",
+                    "nbPlaces": "2",
+                    "price": "80.00",
+                    "description": "Chambre double avec salle de bain privée",
+                    "validated": "1",
+                    "imgPath": "NULL",
+                    "housing": "1"
+                },
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-15",
+                    "uuid": "2",
+                    "nbPlaces": "1",
+                    "price": "50.00",
+                    "description": "Chambre individuelle avec vue sur la ville",
+                    "validated": "0",
+                    "imgPath": "NULL",
+                    "housing": "1"
+                },
+                {
+                    "startTime": "2024-07-01",
+                    "endTime": "2024-07-31",
+                    "uuid": "3",
+                    "nbPlaces": "4",
+                    "price": "120.00",
+                    "description": "Suite familiale avec deux chambres",
+                    "validated": "1",
+                    "imgPath": "NULL",
+                    "housing": "2"
+                }
+            ],
+            "SERVICES": [
+                {
+                    "startTime": "2024-07-01 19:44:52",
+                    "endTime": "2024-07-01 20:14:52",
+                    "uuid": "1",
+                    "price": "10.00",
+                    "description": "Service1 description",
+                    "imgPath": "NULL",
+                    "duration": "00:30:00",
+                    "account": "1",
+                    "serviceType": "1"
+                },
+                {
+                    "startTime": "2024-07-01 19:44:52",
+                    "endTime": "2024-07-01 20:44:52",
+                    "uuid": "2",
+                    "price": "20.00",
+                    "description": "Service2 description",
+                    "imgPath": "NULL",
+                    "duration": "01:00:00",
+                    "account": "2",
+                    "serviceType": "2"
+                },
+                {
+                    "startTime": "2024-07-01 19:44:52",
+                    "endTime": "2024-07-01 21:14:52",
+                    "uuid": "3",
+                    "price": "30.00",
+                    "description": "Service3 description",
+                    "imgPath": "NULL",
+                    "duration": "01:30:00",
+                    "account": "3",
+                    "serviceType": "3"
+                }
+            ],
+            "EQUIPMENTS": [
+                {
+                    "number": "2",
+                    "uuid": "1",
+                    "name": "Lit double",
+                    "description": "Lit double avec matelas confortable",
+                    "price": "100.00",
+                    "numberTotal": "2",
+                    "imgPath": "NULL",
+                    "equipmentType": "1",
+                    "housing": "1"
+                },
+                {
+                    "number": "1",
+                    "uuid": "2",
+                    "name": "Canapé",
+                    "description": "Canapé en cuir avec méridienne",
+                    "price": "500.00",
+                    "numberTotal": "1",
+                    "imgPath": "NULL",
+                    "equipmentType": "2",
+                    "housing": "2"
+                },
+                {
+                    "number": "3",
+                    "uuid": "3",
+                    "name": "Réfrigérateur",
+                    "description": "Réfrigérateur avec congélateur",
+                    "price": "800.00",
+                    "numberTotal": "1",
+                    "imgPath": "NULL",
+                    "equipmentType": "3",
+                    "housing": "3"
+                }
+            ]
+        }
+    ],
+    {
+        "account": "2",
+        "paid": "0",
+        "uuid": "2",
+        "HOUSING": [
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-08",
+                "uuid": "1",
+                "surface": "100.00",
+                "price": "200000.00",
+                "validated": "1",
+                "streetNb": "123",
+                "city": "Paris",
+                "zipCode": "75001",
+                "street": "Rue de Rivoli",
+                "description": "Belle maison individuelle",
+                "imgPath": "NULL",
+                "houseType": "1",
+                "account": "1"
+            },
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-15",
+                "uuid": "2",
+                "surface": "75.50",
+                "price": "150000.00",
+                "validated": "0",
+                "streetNb": "456",
+                "city": "Lyon",
+                "zipCode": "69001",
+                "street": "Rue de la République",
+                "description": "Appartement lumineux",
+                "imgPath": "NULL",
+                "houseType": "2",
+                "account": "2"
+            },
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-31",
+                "uuid": "3",
+                "surface": "120.75",
+                "price": "300000.00",
+                "validated": "1",
+                "streetNb": "789",
+                "city": "Marseille",
+                "zipCode": "13001",
+                "street": "Avenue du Prado",
+                "description": "Maison de ville avec jardin",
+                "imgPath": "NULL",
+                "houseType": "3",
+                "account": "1"
+            }
+        ],
+        "BEDROOMS": [
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-08",
+                "uuid": "1",
+                "nbPlaces": "2",
+                "price": "80.00",
+                "description": "Chambre double avec salle de bain privée",
+                "validated": "1",
+                "imgPath": "NULL",
+                "housing": "1"
+            },
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-15",
+                "uuid": "2",
+                "nbPlaces": "1",
+                "price": "50.00",
+                "description": "Chambre individuelle avec vue sur la ville",
+                "validated": "0",
+                "imgPath": "NULL",
+                "housing": "1"
+            },
+            {
+                "startTime": "2024-07-01",
+                "endTime": "2024-07-31",
+                "uuid": "3",
+                "nbPlaces": "4",
+                "price": "120.00",
+                "description": "Suite familiale avec deux chambres",
+                "validated": "1",
+                "imgPath": "NULL",
+                "housing": "2"
+            }
+        ],
+        "SERVICES": [
+            {
+                "startTime": "2024-07-01 19:44:52",
+                "endTime": "2024-07-01 20:14:52",
+                "uuid": "1",
+                "price": "10.00",
+                "description": "Service1 description",
+                "imgPath": "NULL",
+                "duration": "00:30:00",
+                "account": "1",
+                "serviceType": "1"
+            },
+            {
+                "startTime": "2024-07-01 19:44:52",
+                "endTime": "2024-07-01 20:44:52",
+                "uuid": "2",
+                "price": "20.00",
+                "description": "Service2 description",
+                "imgPath": "NULL",
+                "duration": "01:00:00",
+                "account": "2",
+                "serviceType": "2"
+            },
+            {
+                "startTime": "2024-07-01 19:44:52",
+                "endTime": "2024-07-01 21:14:52",
+                "uuid": "3",
+                "price": "30.00",
+                "description": "Service3 description",
+                "imgPath": "NULL",
+                "duration": "01:30:00",
+                "account": "3",
+                "serviceType": "3"
+            }
+        ],
+        "EQUIPMENTS": [
+            {
+                "number": "2",
+                "uuid": "1",
+                "name": "Lit double",
+                "description": "Lit double avec matelas confortable",
+                "price": "100.00",
+                "numberTotal": "2",
+                "imgPath": "NULL",
+                "equipmentType": "1",
+                "housing": "1"
+            },
+            {
+                "number": "1",
+                "uuid": "2",
+                "name": "Canapé",
+                "description": "Canapé en cuir avec méridienne",
+                "price": "500.00",
+                "numberTotal": "1",
+                "imgPath": "NULL",
+                "equipmentType": "2",
+                "housing": "2"
+            },
+            {
+                "number": "3",
+                "uuid": "3",
+                "name": "Réfrigérateur",
+                "description": "Réfrigérateur avec congélateur",
+                "price": "800.00",
+                "numberTotal": "1",
+                "imgPath": "NULL",
+                "equipmentType": "3",
+                "housing": "3"
+            }
+        ]
+    }
+],
+{
+    "account": "3",
+    "paid": "0",
+    "uuid": "3",
+    "HOUSING": [
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-08",
+            "uuid": "1",
+            "surface": "100.00",
+            "price": "200000.00",
+            "validated": "1",
+            "streetNb": "123",
+            "city": "Paris",
+            "zipCode": "75001",
+            "street": "Rue de Rivoli",
+            "description": "Belle maison individuelle",
+            "imgPath": "NULL",
+            "houseType": "1",
+            "account": "1"
+        },
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-15",
+            "uuid": "2",
+            "surface": "75.50",
+            "price": "150000.00",
+            "validated": "0",
+            "streetNb": "456",
+            "city": "Lyon",
+            "zipCode": "69001",
+            "street": "Rue de la République",
+            "description": "Appartement lumineux",
+            "imgPath": "NULL",
+            "houseType": "2",
+            "account": "2"
+        },
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-31",
+            "uuid": "3",
+            "surface": "120.75",
+            "price": "300000.00",
+            "validated": "1",
+            "streetNb": "789",
+            "city": "Marseille",
+            "zipCode": "13001",
+            "street": "Avenue du Prado",
+            "description": "Maison de ville avec jardin",
+            "imgPath": "NULL",
+            "houseType": "3",
+            "account": "1"
+        }
+    ],
+    "BEDROOMS": [
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-08",
+            "uuid": "1",
+            "nbPlaces": "2",
+            "price": "80.00",
+            "description": "Chambre double avec salle de bain privée",
+            "validated": "1",
+            "imgPath": "NULL",
+            "housing": "1"
+        },
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-15",
+            "uuid": "2",
+            "nbPlaces": "1",
+            "price": "50.00",
+            "description": "Chambre individuelle avec vue sur la ville",
+            "validated": "0",
+            "imgPath": "NULL",
+            "housing": "1"
+        },
+        {
+            "startTime": "2024-07-01",
+            "endTime": "2024-07-31",
+            "uuid": "3",
+            "nbPlaces": "4",
+            "price": "120.00",
+            "description": "Suite familiale avec deux chambres",
+            "validated": "1",
+            "imgPath": "NULL",
+            "housing": "2"
+        }
+    ],
+    "SERVICES": [
+        {
+            "startTime": "2024-07-01 19:44:52",
+            "endTime": "2024-07-01 20:14:52",
+            "uuid": "1",
+            "price": "10.00",
+            "description": "Service1 description",
+            "imgPath": "NULL",
+            "duration": "00:30:00",
+            "account": "1",
+            "serviceType": "1"
+        },
+        {
+            "startTime": "2024-07-01 19:44:52",
+            "endTime": "2024-07-01 20:44:52",
+            "uuid": "2",
+            "price": "20.00",
+            "description": "Service2 description",
+            "imgPath": "NULL",
+            "duration": "01:00:00",
+            "account": "2",
+            "serviceType": "2"
+        },
+        {
+            "startTime": "2024-07-01 19:44:52",
+            "endTime": "2024-07-01 21:14:52",
+            "uuid": "3",
+            "price": "30.00",
+            "description": "Service3 description",
+            "imgPath": "NULL",
+            "duration": "01:30:00",
+            "account": "3",
+            "serviceType": "3"
+        }
+    ],
+    "EQUIPMENTS": [
+        {
+            "number": "2",
+            "uuid": "1",
+            "name": "Lit double",
+            "description": "Lit double avec matelas confortable",
+            "price": "100.00",
+            "numberTotal": "2",
+            "imgPath": "NULL",
+            "equipmentType": "1",
+            "housing": "1"
+        },
+        {
+            "number": "1",
+            "uuid": "2",
+            "name": "Canapé",
+            "description": "Canapé en cuir avec méridienne",
+            "price": "500.00",
+            "numberTotal": "1",
+            "imgPath": "NULL",
+            "equipmentType": "2",
+            "housing": "2"
+        },
+        {
+            "number": "3",
+            "uuid": "3",
+            "name": "Réfrigérateur",
+            "description": "Réfrigérateur avec congélateur",
+            "price": "800.00",
+            "numberTotal": "1",
+            "imgPath": "NULL",
+            "equipmentType": "3",
+            "housing": "3"
+        }
+    ]
+}
+],
+},
+},
+}

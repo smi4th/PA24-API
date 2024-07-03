@@ -228,6 +228,29 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	if query["all"] == "true" {
+		housingRequest += " WHERE B.ACCOUNT = ?"
+		housingParams = append(housingParams, account_)
+		
+		bedroomRequest += " WHERE B.ACCOUNT = ?"
+		bedroomParams = append(bedroomParams, account_)
+
+		serviceRequest += " WHERE B.ACCOUNT = ?"
+		serviceParams = append(serviceParams, account_)
+
+		equipmentRequest += " WHERE B.ACCOUNT = ?"
+		equipmentParams = append(equipmentParams, account_)
+
+		countRequest += " WHERE B.ACCOUNT = ?"
+		countParams = append(countParams, account_)
+		countResult, err := tools.ExecuteQuery(db, countRequest, countParams...)
+		if err != nil {
+			tools.ErrorLog(err.Error())
+			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
+			return
+		}
+	}
+
 	var count string
 	for countResult.Next() {
 		err := countResult.Scan(&count)
