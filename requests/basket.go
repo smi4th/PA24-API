@@ -251,6 +251,16 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	defer mainResult.Close()
+		
+	if query["all"] == "true" {
+		housingRequest += " WHERE B.ACCOUNT = ?"
+		
+		bedroomRequest += " WHERE B.ACCOUNT = ?"
+
+		serviceRequest += " WHERE B.ACCOUNT = ?"
+
+		equipmentRequest += " WHERE B.ACCOUNT = ?"
+	}
 
 	for mainResult.Next() {
 
@@ -268,22 +278,11 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 			return
 		}
-		
-		if query["all"] == "true" {
-			housingRequest += " WHERE B.ACCOUNT = ?"
-			housingParams = append(housingParams, account_)
-			tools.ErrorLog(housingRequest)
-			fmt.Println(housingParams)
-			
-			bedroomRequest += " WHERE B.ACCOUNT = ?"
-			bedroomParams = append(bedroomParams, account_)
 
-			serviceRequest += " WHERE B.ACCOUNT = ?"
-			serviceParams = append(serviceParams, account_)
-
-			equipmentRequest += " WHERE B.ACCOUNT = ?"
-			equipmentParams = append(equipmentParams, account_)
-		}
+		housingParams = []interface{}{account_}
+		bedroomParams = []interface{}{account_}
+		serviceParams = []interface{}{account_}
+		equipmentParams = []interface{}{account_}
 
 		jsonResponse += `{"account": "` + account_ + `", "paid": "` + paid_ + `", "uuid": "` + uuid_ + `", "HOUSING": [`
 
