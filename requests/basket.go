@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"tools"
 	"database/sql"
-	"fmt"
 )
 
 func Basket(w http.ResponseWriter, r *http.Request, db *sql.DB) {
