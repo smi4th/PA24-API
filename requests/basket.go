@@ -257,6 +257,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			housingRequest += " WHERE B.ACCOUNT = ?"
 			housingParams = append(housingParams, account_)
 			tools.ErrorLog(housingRequest)
+			tools.ErrorLog(housingParams)
 			
 			bedroomRequest += " WHERE B.ACCOUNT = ?"
 			bedroomParams = append(bedroomParams, account_)
