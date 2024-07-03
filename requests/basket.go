@@ -243,7 +243,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		countRequest += " WHERE B.ACCOUNT = ?"
 		countParams = append(countParams, account_)
-		countResult, err := tools.ExecuteQuery(db, countRequest, countParams...)
+		countResult, err = tools.ExecuteQuery(db, countRequest, countParams...)
 		if err != nil {
 			tools.ErrorLog(err.Error())
 			tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
