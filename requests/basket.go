@@ -93,11 +93,6 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	account_ := query["account"]
 
-	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
-		tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
-		return
-	}
-
 	// Checking if the account exists
 	if !tools.ElementExists(db, "ACCOUNT", "uuid", account_) && account_ != "" {
 		tools.JsonResponse(w, 404, `{"message": "Account not found"}`)
