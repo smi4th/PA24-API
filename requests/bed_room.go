@@ -37,7 +37,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `nbPlaces`, `price`, `description`, `housing`, `imgPath`, `title`) {
+	if tools.ValuesNotInBody(body, `nbPlaces`, `price`, `description`, `housing`, `imgPath`, `title`, `taxes`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -48,6 +48,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	housing_ := tools.BodyValueToString(body, "housing")
 	imgPath_ := tools.BodyValueToString(body, "imgPath")
 	title_ := tools.BodyValueToString(body, "title")
+	taxes_ := tools.BodyValueToString(body, "taxes")
 
 	if tools.GetUUID(r, db) != tools.GetElement(db, "HOUSING", "account", "uuid", housing_) && !tools.IsAdmin(r, db) && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -79,6 +80,13 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 	}
 	
+	// if the taxes exist
+	if !tools.ValueIsEmpty(taxes_) {
+		if !tools.ElementExists(db, "TAXES", "uuid", taxes_) {
+			tools.JsonResponse(w, 400, `{"error": "This taxes does not exist"}`)
+			return
+		}
+	}
 	
 	
 
@@ -89,7 +97,7 @@ func BedRoomPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the BedRoom in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid_, nbPlaces_, price_, description_, "0", housing_, imgPath_, title_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `BED_ROOM` (`uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title`, `taxes`€) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, nbPlaces_, price_, description_, "0", housing_, imgPath_, title_, taxes_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -216,6 +224,7 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	
 	housing_ := tools.BodyValueToString(body, "housing")
 	title_ := tools.BodyValueToString(body, "title")
+	taxes_ := tools.BodyValueToString(body, "taxes")
 	
 
 	// Checking if the values are empty
@@ -247,6 +256,13 @@ func BedRoomPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     if !tools.ValueIsEmpty(housing_) {
 		if !tools.ElementExists(db, "HOUSING", "uuid", housing_) {
 			tools.JsonResponse(w, 400, `{"error": "This housing does not exist"}`) 
+			return
+		}
+	}
+
+	if !tools.ValueIsEmpty(taxes_) {
+		if !tools.ElementExists(db, "TAXES", "uuid", taxes_) {
+			tools.JsonResponse(w, 400, `{"error": "This taxes does not exist"}`)
 			return
 		}
 	}
@@ -345,7 +361,7 @@ func BedRoomDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func BedRoomGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title` FROM `BED_ROOM` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `nbPlaces`, `price`, `description`, `validated`, `housing`, `imgPath`, `title`, `taxes` FROM `BED_ROOM` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}

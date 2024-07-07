@@ -33,6 +33,12 @@ CREATE TABLE IF NOT EXISTS `ACCOUNT` (
     FOREIGN KEY (`provider`) REFERENCES `PROVIDER`(`uuid`)
 );
 
+CREATE TABLE IF NOT EXISTS `TAXES` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `name` VARCHAR(45) NOT NULL, -- UNIQUE
+    `value` DECIMAL(10, 2) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
     `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
     `name` VARCHAR(45) NOT NULL, -- UNIQUE
@@ -41,7 +47,9 @@ CREATE TABLE IF NOT EXISTS `SUBSCRIPTION` (
     `VIP` BOOLEAN NOT NULL,
     `description` TEXT NOT NULL,
     `duration` INT NOT NULL,
-    `imgPath` VARCHAR(255)
+    `imgPath` VARCHAR(255),
+    `taxes` VARCHAR(64) NOT NULL,
+    FOREIGN KEY (`taxes`) REFERENCES `TAXES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `ACCOUNT_SUBSCRIPTION` (
@@ -69,8 +77,10 @@ CREATE TABLE IF NOT EXISTS `SERVICES` (
     `validated` BOOLEAN NOT NULL DEFAULT false,
     `account` VARCHAR(40) NOT NULL,
     `service_type` VARCHAR(40) NOT NULL,
+    `taxes` VARCHAR(64) NOT NULL,
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
-    FOREIGN KEY (`service_type`) REFERENCES `SERVICES_TYPES`(`uuid`)
+    FOREIGN KEY (`service_type`) REFERENCES `SERVICES_TYPES`(`uuid`),
+    FOREIGN KEY (`taxes`) REFERENCES `TAXES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `DISPONIBILITY` (
@@ -99,11 +109,12 @@ CREATE TABLE IF NOT EXISTS `HOUSING` (
     `street` VARCHAR(45) NOT NULL,
     `description` TEXT NOT NULL,
     `imgPath` VARCHAR(255),
-    `taxes` DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
     `house_type` VARCHAR(40) NOT NULL,
     `account` VARCHAR(40) NOT NULL,
+    `taxes` VARCHAR(64) NOT NULL,
     FOREIGN KEY (`house_type`) REFERENCES `HOUSE_TYPE`(`uuid`),
-    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
+    FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`),
+    FOREIGN KEY (`taxes`) REFERENCES `TAXES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
@@ -121,8 +132,10 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT` (
     `imgPath` VARCHAR(255),
     `equipment_type` VARCHAR(40) NOT NULL,
     `housing` VARCHAR(40) NOT NULL,
+    `taxes` VARCHAR(64) NOT NULL,
     FOREIGN KEY (`equipment_type`) REFERENCES `EQUIPMENT_TYPE`(`uuid`),
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`),
+    FOREIGN KEY (`taxes`) REFERENCES `TAXES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `BED_ROOM` (
@@ -133,9 +146,10 @@ CREATE TABLE IF NOT EXISTS `BED_ROOM` (
     `description` TEXT NOT NULL,
     `validated` BOOLEAN NOT NULL,
     `imgPath` VARCHAR(255),
-    `taxes` DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
     `housing` VARCHAR(40) NOT NULL,
-    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`)
+    `taxes` VARCHAR(64) NOT NULL,
+    FOREIGN KEY (`housing`) REFERENCES `HOUSING`(`uuid`),
+    FOREIGN KEY (`taxes`) REFERENCES `TAXES`(`uuid`)
 );
 
 CREATE TABLE IF NOT EXISTS `BASKET` (
@@ -235,4 +249,12 @@ CREATE TABLE IF NOT EXISTS `TMESSAGE` (
     PRIMARY KEY (`ticket`, `account`, `uuid`),
     FOREIGN KEY (`ticket`) REFERENCES `TICKET`(`uuid`),
     FOREIGN KEY (`account`) REFERENCES `ACCOUNT`(`uuid`)
+);
+
+/* ---------------------------------------- */
+
+CREATE TABLE IF NOT EXISTS `CHATBOT` (
+    `uuid` VARCHAR(40) NOT NULL PRIMARY KEY,
+    `keyword` VARCHAR(255) NOT NULL,
+    `text` TEXT NOT NULL
 );

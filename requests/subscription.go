@@ -41,7 +41,7 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`) {
+	if tools.ValuesNotInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`, `taxes`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -53,10 +53,10 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	description_ := tools.BodyValueToString(body, "description")
 	duration_ := tools.BodyValueToString(body, "duration")
 	imgPath_ := tools.BodyValueToString(body, "imgPath")
-	
+	taxes_ := tools.BodyValueToString(body, "taxes")	
 
 	// Checking if the values are empty
-	if tools.ValueIsEmpty(name_, price_, ads_, VIP_, description_, duration_, imgPath_) {
+	if tools.ValueIsEmpty(name_, price_, ads_, VIP_, description_, duration_, imgPath_, taxes_) {
 		tools.JsonResponse(w, 400, `{"message": "Fields cannot be empty"}`)
 		return
 	}
@@ -79,11 +79,15 @@ func SubscriptionPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	
+	if tools.ElementExists(db, "TAXES", "uuid", taxes_) {
+		tools.JsonResponse(w, 400, `{"error": "This taxes already exists"}`)
+		return
+	}
 
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Subscription in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid_, name_, price_, ads_, VIP_, description_, duration_, imgPath_)
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `SUBSCRIPTION` (`uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`, `taxes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", uuid_, name_, price_, ads_, VIP_, description_, duration_, imgPath_, taxes_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
@@ -115,7 +119,7 @@ func SubscriptionGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, tools.ReadBody(r))
 
 	// Checking if the query contains the required fields
-	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `all`, `imgPath`) {
+	if tools.AtLeastOneValueInQuery(query, `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `all`, `imgPath`, `taxes`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -196,7 +200,7 @@ func SubscriptionPut(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.AtLeastOneValueInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`) || tools.ValuesNotInQuery(query, `uuid`) {
+	if tools.AtLeastOneValueInBody(body, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`, `taxes`) || tools.ValuesNotInQuery(query, `uuid`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -334,7 +338,7 @@ func SubscriptionDelete(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func SubscriptionGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, error) {
-	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath` FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
+	result, err := tools.ExecuteQuery(db, "SELECT `uuid`, `name`, `price`, `ads`, `VIP`, `description`, `duration`, `imgPath`, `taxes` FROM `SUBSCRIPTION` WHERE uuid = ?", uuid_)
 	if err != nil {
 		return "", err
 	}
@@ -344,18 +348,18 @@ func SubscriptionGetAll(db *sql.DB, uuid_ string, arrayOutput bool) (string, err
 }
 
 func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, error) {
-	var uuid_, name_, price_, ads_, VIP_, description_, duration_, imgPath_ string
+	var uuid_, name_, price_, ads_, VIP_, description_, duration_, imgPath_, taxes_ string
 
 	switch arrayOutput {
 	case true:
 		var jsonResponse string
 		jsonResponse += `[`
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_, &imgPath_)
+			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_, &imgPath_, &taxes_)
 			if err != nil {
 				return "", err
 			}
-			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `", "imgPath": "` + imgPath_ + `"},`
+			jsonResponse += `{"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `", "imgPath": "` + imgPath_ + `", "taxes": "` + taxes_ + `"},`
 		}
 		if len(jsonResponse) > 1 {
 			jsonResponse = jsonResponse[:len(jsonResponse)-1]
@@ -364,11 +368,11 @@ func SubscriptionGetAllAssociation(result *sql.Rows, arrayOutput bool) (string, 
 		return jsonResponse, nil
 	default:
 		for result.Next() {
-			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_, &imgPath_)
+			err := result.Scan(&uuid_, &name_, &price_, &ads_, &VIP_, &description_, &duration_, &imgPath_, &taxes_)
 			if err != nil {
 				return "", err
 			}
 		}
-		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `", "imgPath": "` + imgPath_ + `"`, nil
+		return `"uuid": "` + uuid_ + `", "name": "` + name_ + `", "price": "` + price_ + `", "ads": "` + ads_ + `", "VIP": "` + VIP_ + `", "description": "` + description_ + `", "duration": "` + duration_ + `", "imgPath": "` + imgPath_ + `", "taxes": "` + taxes_ + `"`, nil
 	}
 }

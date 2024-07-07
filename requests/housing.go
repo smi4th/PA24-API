@@ -37,7 +37,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tools.RequestLog(r, body)
 
 	// Checking if the body contains the required fields
-	if tools.ValuesNotInBody(body, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`, `title`) {
+	if tools.ValuesNotInBody(body, `surface`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`, `title`, `taxes`) {
 		tools.JsonResponse(w, 400, `{"message": "Missing fields"}`)
 		return
 	}
@@ -53,6 +53,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	house_type_ := tools.BodyValueToString(body, "house_type")
 	account_ := tools.BodyValueToString(body, "account")
 	imgPath_ := tools.BodyValueToString(body, "imgPath")
+	taxes_ := tools.BodyValueToString(body, "taxes")
 
 	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
 		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
@@ -97,6 +98,11 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			}
 		}
 	}
+
+	if tools.ElementExists(db, "TAXES", "uuid", taxes_) {
+		tools.JsonResponse(w, 400, `{"error": "This taxes does not exist"}`)
+		return
+	}
 	
 
 	
@@ -106,7 +112,7 @@ func HousingPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	uuid_ := tools.GenerateUUID()
 
 	// Inserting the Housing in the database
-	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `title`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`, `validated`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", uuid_, surface_, title_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_, imgPath_, "0")
+	result, err := tools.ExecuteQuery(db, "INSERT INTO `HOUSING` (`uuid`, `surface`, `title`, `price`, `street_nb`, `city`, `zip_code`, `street`, `description`, `house_type`, `account`, `imgPath`, `validated`, `taxes`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", uuid_, surface_, title_, price_, street_nb_, city_, zip_code_, street_, description_, house_type_, account_, imgPath_, "0", taxes_)
 	if err != nil {
 		tools.ErrorLog(err.Error())
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)

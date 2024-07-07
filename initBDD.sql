@@ -17,10 +17,15 @@ INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, ema
 ('4', '', 'user4', '$2a$10$ZPgHF8EJ93a5JLDKCaEmJOhqde6CXepP/NZXhKP1EEbx3kK1BMZgm', 'Bob', 'Brown', 'bob.brown@example.com', 'NULL', '4', '1'),
 ('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2');
 
-INSERT INTO SUBSCRIPTION (uuid, name, price, ads, VIP, description, duration, imgPath) VALUES
-('1', 'Subscription1', 10.00, '1', '0', 'Subscription1 description', 30, 'NULL'),
-('2', 'Subscription2', 20.00, '0', '0', 'Subscription2 description', 60, 'NULL'),
-('3', 'Subscription3', 30.00, '0', '1', 'Subscription3 description', 90, 'NULL');
+INSERT INTO TAXES(uuid, name, value) VALUES
+('1', 'TVA', 20.00),
+('2', 'Taxes de séjour', 5.00),
+('3', 'Frais de dossier', 10.00);
+
+INSERT INTO SUBSCRIPTION (uuid, name, price, ads, VIP, description, duration, imgPath, taxes) VALUES
+('1', 'Subscription1', 10.00, '1', '0', 'Subscription1 description', 30, 'NULL', '1'),
+('2', 'Subscription2', 20.00, '0', '0', 'Subscription2 description', 60, 'NULL', '2'),
+('3', 'Subscription3', 30.00, '0', '1', 'Subscription3 description', 90, 'NULL', '3');
 
 INSERT INTO ACCOUNT_SUBSCRIPTION (start_date, account, subscription) VALUES
 (NOW(), '1', '1'),
@@ -31,10 +36,10 @@ INSERT INTO SERVICES_TYPES (uuid, type, imgPath) VALUES
 ('2', 'Service2', 'NULL'),
 ('3', 'Service3', 'NULL');
 
-INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration, token) VALUES
-('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30', '123456'),
-('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00', '654321'),
-('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30', '987654');
+INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration, token, taxes) VALUES
+('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30', '123456', '1'),
+('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00', '654321', '2'),
+('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30', '987654', '3');
 
 INSERT INTO DISPONIBILITY (uuid, start_date, end_date, account) VALUES
 ('1', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), "1"),
@@ -46,35 +51,35 @@ INSERT INTO HOUSE_TYPE (uuid, type, imgPath) VALUES
 ('2', 'Appartement', 'NULL'),
 ('3', 'Maison de ville', 'NULL');
 
-INSERT INTO HOUSING (uuid, surface, price, validated, street_nb, city, zip_code, street, description, house_type, account, imgPath, title) VALUES
-('1', 100.00, 200000.00, true, '123', 'Paris', '75001', 'Rue de Rivoli', 'Belle maison individuelle', '1', '1', 'NULL', 'Maison de charme'),
-('2', 75.50, 150000.00, false, '456', 'Lyon', '69001', 'Rue de la République', 'Appartement lumineux', '2', '2', 'NULL', 'Appartement cosy'),
-('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL', 'Maison familiale'),
-('4', 90.00, 180000.00, true, '321', 'Bordeaux', '33000', 'Rue Sainte-Catherine', 'Charmant appartement au centre-ville', '2', '3', 'NULL', 'Appartement charmant'),
-('5', 65.25, 120000.00, false, '654', 'Nice', '06000', 'Promenade des Anglais', 'Studio avec vue sur mer', '1', '4', 'NULL', 'Studio avec vue'),
-('6', 110.50, 250000.00, true, '987', 'Lille', '59000', 'Rue Faidherbe', 'Maison spacieuse avec jardin', '3', '2', 'NULL', 'Maison spacieuse'),
-('7', 80.00, 160000.00, true, '101', 'Toulouse', '31000', 'Place du Capitole', 'Appartement moderne et lumineux', '2', '5', 'NULL', 'Appartement moderne'),
-('8', 95.75, 190000.00, false, '202', 'Nantes', '44000', 'Rue Crébillon', 'Maison rénovée avec terrasse', '3', '1', 'NULL', 'Maison rénovée'),
-('9', 70.50, 140000.00, true, '303', 'Strasbourg', '67000', 'Place Kléber', 'Appartement ancien avec charme', '1', '3', 'NULL', 'Appartement ancien'),
-('10', 85.00, 170000.00, true, '404', 'Rennes', '35000', 'Rue Saint-Michel', 'Maison de ville bien située', '2', '4', 'NULL', 'Maison de ville'),
-('11', 105.25, 220000.00, false, '505', 'Montpellier', '34000', 'Place de la Comédie', 'Grande maison familiale', '3', '2', 'NULL', 'Maison familiale'),
-('12', 60.00, 130000.00, true, '606', 'Reims', '51100', 'Rue de Vesle', 'Appartement central et calme', '1', '5', 'NULL', 'Appartement central'),
-('13', 115.75, 260000.00, true, '707', 'Dijon', '21000', 'Place de la Libération', 'Maison moderne avec piscine', '3', '1', 'NULL', 'Maison moderne');
+INSERT INTO HOUSING (uuid, surface, price, validated, street_nb, city, zip_code, street, description, house_type, account, imgPath, title, taxes) VALUES
+('1', 100.00, 200000.00, true, '123', 'Paris', '75001', 'Rue de Rivoli', 'Belle maison individuelle', '1', '1', 'NULL', 'Maison de charme', '1'),
+('2', 75.50, 150000.00, false, '456', 'Lyon', '69001', 'Rue de la République', 'Appartement lumineux', '2', '2', 'NULL', 'Appartement cosy', '1'),
+('3', 120.75, 300000.00, true, '789', 'Marseille', '13001', 'Avenue du Prado', 'Maison de ville avec jardin', '3', '1', 'NULL', 'Maison familiale', '1'),
+('4', 90.00, 180000.00, true, '321', 'Bordeaux', '33000', 'Rue Sainte-Catherine', 'Charmant appartement au centre-ville', '2', '3', 'NULL', 'Appartement charmant', '1'),
+('5', 65.25, 120000.00, false, '654', 'Nice', '06000', 'Promenade des Anglais', 'Studio avec vue sur mer', '1', '4', 'NULL', 'Studio avec vue', '1'),
+('6', 110.50, 250000.00, true, '987', 'Lille', '59000', 'Rue Faidherbe', 'Maison spacieuse avec jardin', '3', '2', 'NULL', 'Maison spacieuse', '1'),
+('7', 80.00, 160000.00, true, '101', 'Toulouse', '31000', 'Place du Capitole', 'Appartement moderne et lumineux', '2', '5', 'NULL', 'Appartement moderne', '1'),
+('8', 95.75, 190000.00, false, '202', 'Nantes', '44000', 'Rue Crébillon', 'Maison rénovée avec terrasse', '3', '1', 'NULL', 'Maison rénovée', '1'),
+('9', 70.50, 140000.00, true, '303', 'Strasbourg', '67000', 'Place Kléber', 'Appartement ancien avec charme', '1', '3', 'NULL', 'Appartement ancien', '1'),
+('10', 85.00, 170000.00, true, '404', 'Rennes', '35000', 'Rue Saint-Michel', 'Maison de ville bien située', '2', '4', 'NULL', 'Maison de ville', '1'),
+('11', 105.25, 220000.00, false, '505', 'Montpellier', '34000', 'Place de la Comédie', 'Grande maison familiale', '3', '2', 'NULL', 'Maison familiale', '1'),
+('12', 60.00, 130000.00, true, '606', 'Reims', '51100', 'Rue de Vesle', 'Appartement central et calme', '1', '5', 'NULL', 'Appartement central', '1'),
+('13', 115.75, 260000.00, true, '707', 'Dijon', '21000', 'Place de la Libération', 'Maison moderne avec piscine', '3', '1', 'NULL', 'Maison moderne', '1');
 
 INSERT INTO EQUIPMENT_TYPE (uuid, name, imgPath) VALUES
 ('1', 'Literie', 'NULL'),
 ('2', 'Mobilier', 'NULL'),
 ('3', 'Électroménager', 'NULL');
 
-INSERT INTO EQUIPMENT (uuid, name, description, price, equipment_type, housing, imgPath, number) VALUES
-('1', 'Lit double', 'Lit double avec matelas confortable', 100.00, '1', '1', 'NULL', '2'),
-('2', 'Canapé', 'Canapé en cuir avec méridienne', 500.00, '2', '2', 'NULL', '1'),
-('3', 'Réfrigérateur', 'Réfrigérateur avec congélateur', 800.00, '3', '3', 'NULL', '1');
+INSERT INTO EQUIPMENT (uuid, name, description, price, equipment_type, housing, imgPath, number, taxes) VALUES
+('1', 'Lit double', 'Lit double avec matelas confortable', 100.00, '1', '1', 'NULL', '2', '1'),
+('2', 'Canapé', 'Canapé en cuir avec méridienne', 500.00, '2', '2', 'NULL', '1', '2'),
+('3', 'Réfrigérateur', 'Réfrigérateur avec congélateur', 800.00, '3', '3', 'NULL', '1', '3');
 
-INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, imgPath, title) VALUES
-('1', 2, 80.00, 'Chambre double avec salle de bain privée', true, '1', 'NULL', 'Chambre parentale'),
-('2', 1, 50.00, 'Chambre individuelle avec vue sur la ville', false, '1', 'NULL', 'Chambre avec vue'),
-('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL', 'Suite familiale');
+INSERT INTO BED_ROOM (uuid, nbPlaces, price, description, validated, housing, imgPath, title, taxes) VALUES
+('1', 2, 80.00, 'Chambre double avec salle de bain privée', true, '1', 'NULL', 'Chambre parentale', '1'),
+('2', 1, 50.00, 'Chambre individuelle avec vue sur la ville', false, '1', 'NULL', 'Chambre avec vue', '1'),
+('3', 4, 120.00, 'Suite familiale avec deux chambres', true, '2', 'NULL', 'Suite familiale', '1');
 
 INSERT INTO `BASKET` (uuid, account, paid) VALUES
 ('1', '1', '0'),

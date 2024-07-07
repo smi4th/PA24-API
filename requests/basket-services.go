@@ -57,7 +57,7 @@ func BasketServicesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
 	// Checking if the account don't have a unpaid basket
-	rows, err := db.Query("SELECT * FROM BASKET WHERE uuid = ? AND paid = false", basket_)
+	rows, err := db.Query("SELECT * FROM BASKET WHERE uuid = ? AND paid = 0", basket_)
 	if err != nil {
 		tools.JsonResponse(w, 500, `{"message": "Internal server error"}`)
 		return
