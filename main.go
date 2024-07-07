@@ -76,6 +76,8 @@ func main() {
 			requests.BedroomAvailable(w, r, db)
 		case "/bed_room/reservation":
 			requests.BedroomReservation(w, r, db)
+		case "/chatbot":
+			requests.Chatbot(w, r, db)
 		case "/disponibility":
 			requests.Disponibility(w, r, db)
 		case "/equipment_type":
@@ -104,6 +106,8 @@ func main() {
 			requests.Status(w, r, db)
 		case "/subscription":
 			requests.Subscription(w, r, db)
+		case "/taxes":
+			requests.Taxes(w, r, db)
 		case "/ticket":
 			requests.Ticket(w, r, db)
 		case "/tmessage":
