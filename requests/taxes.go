@@ -47,6 +47,7 @@ func TaxesPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 
     name_ := tools.BodyValueToString(body, "name")
+	value_ := tools.BodyValueToString(body, "value")
 
 	// Checking if the values are empty
 	if tools.ValueIsEmpty(name_, value_) {
