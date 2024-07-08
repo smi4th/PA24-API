@@ -148,7 +148,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		case when SE.duration is null then 'null' else SE.duration end AS SERVICE_duration,
 		case when SE.account is null then 'null' else SE.account end AS SERVICE_account,
 		case when SE.service_type is null then 'null' else SE.service_type end AS SERVICE_serviceType
-	FROM BASKET AS B	
+	FROM BASKET AS B
 		LEFT JOIN basket_service AS S ON S.basket = B.uuid
 		LEFT JOIN services AS SE ON SE.uuid = S.service`
 	serviceParams := []interface{}{}
@@ -180,6 +180,7 @@ func BasketGet(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		strictSearch := query["strictSearch"] == "true"
 
 		for key, value := range query {
+			tools.ErrorLog(key + " " + value)
 			// tools.AppendCondition(&request, &params, "B." + key, value, strictSearch)
 			if key != "limit" && key != "offset" && key != "strictSearch" {
 				tools.AppendCondition(&mainRequest, &mainParams, "B." + key, value, strictSearch)
