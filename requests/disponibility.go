@@ -45,11 +45,6 @@ func DisponibilityPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     start_date_ := tools.BodyValueToString(body, "start_date")
 	end_date_ := tools.BodyValueToString(body, "end_date")
 	account_ := tools.BodyValueToString(body, "account")
-
-	if tools.GetUUID(r, db) != account_ && !tools.IsAdmin(r, db) {
-		tools.JsonResponse(w, 403, `{"error": "Forbidden"}`)
-		return
-	}
 	
 
 	// Checking if the values are empty
