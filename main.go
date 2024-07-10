@@ -42,6 +42,11 @@ func main() {
 			requests.HousingGet(w, r, db)
 			return
 		}
+
+		if r.URL.Path == "/chatbot" && r.Method == "POST" {
+			requests.ChatbotPost(w, r, db)
+			return
+		}
 		
 		// Check if the user is authenticated
 		if !tools.IsAuthenticated(r, db) {
