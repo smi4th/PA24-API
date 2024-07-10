@@ -146,7 +146,7 @@ INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
 ('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3'),
 ('3', 'Avez-vous essayé de vider votre cache ?', NOW(), '3', '3');
 
-INSERT INTO chatbot (keyword, text) VALUES
+INSERT INTO CHATBOT (keyword, text) VALUES
 ('inscrire', 'Pour créer un compte, cliquez sur ''Se connecter'' en haut à droite et suivez les instructions.'),
 ('problème', 'Je suis désolé d''apprendre que vous avez rencontré un problème. Comment puis-je vous aider à le résoudre ?'),
 ('appartement', 'Vous cherchez un appartement ? Consultez notre liste d''appartements disponibles en cliquant sur ''voyager''.'),
