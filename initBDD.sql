@@ -4,6 +4,7 @@ INSERT INTO ACCOUNT_TYPE (uuid, type, private, admin) VALUES
 ('3', 'Administateur', 'true', 'true'),
 ('4', 'Provider', 'true', 'false'),
 ('5', 'Handyman', 'false', 'false');
+('6', 'support', 'true', 'true');
 
 INSERT INTO PROVIDER (uuid, name, email, imgPath) VALUES
 ('1', 'Provider1', 'provider1@provider1.com', NULL),
@@ -16,6 +17,7 @@ INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, ema
 ('3', '', 'user3', '$2a$10$Ooru.yReQwZ4v3XoTvQFgu.IgwyuXnaeEqBiVjrdJbWgLlri0juL.', 'Alice', 'Johnson', 'alice.johnson@example.com', 'NULL', '3', NULL),
 ('4', '', 'user4', '$2a$10$ZPgHF8EJ93a5JLDKCaEmJOhqde6CXepP/NZXhKP1EEbx3kK1BMZgm', 'Bob', 'Brown', 'bob.brown@example.com', 'NULL', '4', '1'),
 ('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2');
+
 
 INSERT INTO TAXES(uuid, name, value) VALUES
 ('1', 'TVA', 20.00),
@@ -37,9 +39,9 @@ INSERT INTO SERVICES_TYPES (uuid, type, imgPath) VALUES
 ('3', 'Service3', 'NULL');
 
 INSERT INTO SERVICES (uuid, price, description, account, service_type, imgPath, duration, token, taxes) VALUES
-('1', 10.00, 'Service1 description', '1', '1', 'NULL', '00:30', '123456', '1'),
-('2', 20.00, 'Service2 description', '2', '2', 'NULL', '01:00', '654321', '2'),
-('3', 30.00, 'Service3 description', '3', '3', 'NULL', '01:30', '987654', '3');
+('1', 10.00, 'Service1 description', '5', '1', 'NULL', '00:30', '123456', '1'),
+('2', 20.00, 'Service2 description', '5', '2', 'NULL', '01:00', '654321', '2'),
+('3', 30.00, 'Service3 description', '5', '3', 'NULL', '01:30', '987654', '3');
 
 INSERT INTO DISPONIBILITY (uuid, start_date, end_date, account) VALUES
 ('1', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), "1"),
@@ -139,12 +141,10 @@ INSERT INTO STATUS (uuid, status) VALUES
 INSERT INTO TICKET (uuid, title, description, creation_date, status, account, support) VALUES
 ('1', 'Problème de connexion', "Je n'arrive pas à me connecter à mon compte.", NOW(), '1', '1', '3'),
 ('2', 'Problème de paiement', "Je n'arrive pas à payer ma commande.", NOW(), '2', '2', '3'),
-('3', 'Problème de réservation', "Je n'arrive pas à réserver un logement.", NOW(), '3', '3', '3');
 
 INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
 ('1', 'Avez-vous essayé de réinitialiser votre mot de passe ?', NOW(), '1', '3'),
 ('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3'),
-('3', 'Avez-vous essayé de vider votre cache ?', NOW(), '3', '3');
 
 INSERT INTO CHATBOT (uuid, keyword, text) VALUES
 (1, 'inscrire', 'Pour créer un compte, cliquez sur ''Se connecter'' en haut à droite et suivez les instructions.'),
