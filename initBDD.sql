@@ -146,7 +146,7 @@ INSERT INTO TICKET (uuid, title, description, creation_date, status, account, su
 
 INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
 ('1', 'Avez-vous essayé de réinitialiser votre mot de passe ?', NOW(), '1', '3'),
-('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3'),
+('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3');
 
 INSERT INTO CHATBOT (uuid, keyword, text) VALUES
 (1, 'inscrire', 'Pour créer un compte, cliquez sur ''Se connecter'' en haut à droite et suivez les instructions.'),
