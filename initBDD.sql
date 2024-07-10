@@ -3,7 +3,7 @@ INSERT INTO ACCOUNT_TYPE (uuid, type, private, admin) VALUES
 ('2', 'Loueur', 'false', 'false'),
 ('3', 'Administateur', 'true', 'true'),
 ('4', 'Provider', 'true', 'false'),
-('5', 'Handyman', 'false', 'false');
+('5', 'Handyman', 'false', 'false'),
 ('6', 'support', 'true', 'true');
 
 INSERT INTO PROVIDER (uuid, name, email, imgPath) VALUES
@@ -19,7 +19,7 @@ INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, ema
 ('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2');
 ('6', '', 'user6', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Alex', 'Drucker', 'alex.drucker@example.com', 'NULL', '6', '3');
 ('7', '', 'user7', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Sarah', 'Johnson', 'sarah.johnson@example.com', 'NULL', '5', '5'),
-('8', '', 'user8', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Michael', 'Smith', 'michael.smith@example.com', 'NULL', '2', '6');
+('8', '', 'user8', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Michael', 'Smith', 'michael.smith@example.com', 'NULL', '2', '6'),
 ('9', '', 'user9', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Sophie', 'Brown', 'sophie.brown@example.com', 'NULL', '2', '6');
 
 
@@ -113,10 +113,8 @@ INSERT INTO BASKET_SERVICE (start_time, basket, service) VALUES
 (NOW(), '3', '3');
 
 INSERT INTO REVIEW (uuid, content, note, account, service) VALUES
-('1', 'Service rapide et efficace.', 3, '8', '3');
-INSERT INTO REVIEW (uuid, content, note, account, housing) VALUES
-('2', 'Très bon accueil, je recommande.', 5, '1', '1');
-INSERT INTO REVIEW (uuid, content, note, account, bedroom) VALUES
+('1', 'Service rapide et efficace.', 3, '8', '3'),
+('2', 'Très bon accueil, je recommande.', 5, '1', '1'),
 ('3', 'Chambre spacieuse et confortable.', 4, '2', '2');
 
 INSERT INTO MESSAGE (uuid, creation_date, content, account, author, imgPath) VALUES
