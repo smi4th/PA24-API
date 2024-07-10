@@ -9,7 +9,7 @@ INSERT INTO ACCOUNT_TYPE (uuid, type, private, admin) VALUES
 INSERT INTO PROVIDER (uuid, name, email, imgPath) VALUES
 ('1', 'Provider1', 'provider1@provider1.com', NULL),
 ('2', 'Provider2', 'provider2@provider2.com', NULL),
-('3', 'Provider3', 'provider3@provider3.com', NULL);    
+('3', 'Provider3', 'provider3@provider3.com', NULL);
 
 INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, email, imgPath, account_type, provider) VALUES
 ('1', '', 'user1', '$2a$10$8gd1puAaAsl4LBpvAj6uhO4whmoaSKiD69AiZGEamUtDOr6ALZVmG', 'John', 'Doe', 'john.doe@example.com', 'NULL', '1', NULL),

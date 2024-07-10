@@ -1,6 +1,6 @@
 {    
     "logs": {
         "path": "logs.log",
-        "level": ["error"]
+        "level": ["error","request","response","info","sql"]
     }
 }
