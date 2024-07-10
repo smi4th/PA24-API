@@ -145,3 +145,22 @@ INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
 ('1', 'Avez-vous essayé de réinitialiser votre mot de passe ?', NOW(), '1', '3'),
 ('2', 'Avez-vous essayé de changer de navigateur ?', NOW(), '2', '3'),
 ('3', 'Avez-vous essayé de vider votre cache ?', NOW(), '3', '3');
+
+INSERT INTO chatbot (keyword, text) VALUES
+('inscrire', 'Pour créer un compte, cliquez sur ''Se connecter'' en haut à droite et suivez les instructions.'),
+('problème', 'Je suis désolé d''apprendre que vous avez rencontré un problème. Comment puis-je vous aider à le résoudre ?'),
+('appartement', 'Vous cherchez un appartement ? Consultez notre liste d''appartements disponibles en cliquant sur ''voyager''.'),
+('merci', 'Merci pour votre message ! Si vous avez d''autres questions, n''hésitez pas à demander.'),
+('maison', 'Trouvez votre maison idéale en explorant nos options de location sous l''onglet ''voyager''.'),
+('Bonjourww', 'wowowo'),
+('reserver', 'Pour vous renseigner sur les réservations: https://google.com'),
+('connexion', 'Pour se connecter'', cliquez sur ''Se connecter'' en haut à droite et suivez les instructions.'),
+('bonjour', 'Bonjour ! Comment puis-je vous aider aujourd''hui ?'),
+('location', 'Pour toute location, visitez la section ''voyager'' et explorez nos biens disponibles.'),
+('avis', 'Pour lire ou laisser des avis, cliquez sur ''Avis'' en haut de la page.'),
+('au revoir', 'Au revoir ! Passez une excellente journée et revenez nous voir bientôt.'),
+('prestation', 'Pour consulter nos prestations, cliquez sur ''Prestation'' en haut de la page.'),
+('louer', 'Pour louer un bien, cliquez sur ''Louer'' en haut de cette page.'),
+('aide', 'Je suis là pour vous aider. Que puis-je faire pour vous ?'),
+('villa', 'Pour louer une villa, rendez-vous dans la section ''voyager'' et parcourez nos offres exclusives.'),
+('prix', 'Pour connaître les prix et tarifs, rendez-vous dans la section ''voyager''.');
