@@ -9,25 +9,13 @@ import (
 func Chatbot(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	switch r.Method {
 	case "POST":
-		if tools.IsAdmin(r, db) {
-			ChatbotPost(w, r, db)
-		} else {
-			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
-		}
+		ChatbotPost(w, r, db)
 	case "GET":
 		ChatbotGet(w, r, db)
 	case "PUT":
-		if tools.IsAdmin(r, db) {
-			ChatbotPut(w, r, db)
-		} else {
-			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
-		}
+		ChatbotPut(w, r, db)
 	case "DELETE":
-		if tools.IsAdmin(r, db) {
-			ChatbotDelete(w, r, db)
-		} else {
-			tools.JsonResponse(w, 401, `{"message": "Unauthorized"}`)
-		}
+		ChatbotDelete(w, r, db)
 	default:
 		tools.JsonResponse(w, 405, `{"message": "Method not allowed"}`)
 	}
