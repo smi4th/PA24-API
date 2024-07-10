@@ -43,7 +43,7 @@ func main() {
 			return
 		}
 
-		if r.URL.Path == "/chatbot" && (r.Method == "POST" || r.Method == "GET") {
+		if r.URL.Path == "/chatbot" {
 			requests.Chatbot(w, r, db)
 			return
 		}
