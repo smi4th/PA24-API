@@ -142,7 +142,7 @@ INSERT INTO STATUS (uuid, status) VALUES
 
 INSERT INTO TICKET (uuid, title, description, creation_date, status, account, support) VALUES
 ('1', 'Problème de connexion', "Je n'arrive pas à me connecter à mon compte.", NOW(), '1', '1', '3'),
-('2', 'Problème de paiement', "Je n'arrive pas à payer ma commande.", NOW(), '2', '2', '3'),
+('2', 'Problème de paiement', "Je n'arrive pas à payer ma commande.", NOW(), '2', '2', '3');
 
 INSERT INTO TMESSAGE (uuid, content, creation_date, ticket, account) VALUES
 ('1', 'Avez-vous essayé de réinitialiser votre mot de passe ?', NOW(), '1', '3'),
