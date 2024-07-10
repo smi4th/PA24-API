@@ -16,8 +16,8 @@ INSERT INTO ACCOUNT (uuid, token, username, password, first_name, last_name, ema
 ('2', '', 'user2', '$2a$10$rWQKIlPsWD0NIYVjV8xuROlL3ZfZu8nMVq.mIoHuz0fvlYS7aZBda', 'Jane', 'Smith', 'jane.smith@example.com', 'NULL', '2', NULL),
 ('3', '', 'user3', '$2a$10$Ooru.yReQwZ4v3XoTvQFgu.IgwyuXnaeEqBiVjrdJbWgLlri0juL.', 'Alice', 'Johnson', 'alice.johnson@example.com', 'NULL', '3', NULL),
 ('4', '', 'user4', '$2a$10$ZPgHF8EJ93a5JLDKCaEmJOhqde6CXepP/NZXhKP1EEbx3kK1BMZgm', 'Bob', 'Brown', 'bob.brown@example.com', 'NULL', '1', '1'),
-('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2');
-('6', '', 'user6', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Alex', 'Drucker', 'alex.drucker@example.com', 'NULL', '6', '3');
+('5', '', 'user5', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Emma', 'Wilson', 'emma.wilson@example.com', 'NULL', '5', '2'),
+('6', '', 'user6', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Alex', 'Drucker', 'alex.drucker@example.com', 'NULL', '6', '3'),
 ('7', '', 'user7', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Sarah', 'Johnson', 'sarah.johnson@example.com', 'NULL', '5', '5'),
 ('8', '', 'user8', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Michael', 'Smith', 'michael.smith@example.com', 'NULL', '2', '6'),
 ('9', '', 'user9', '$2a$10$MDVKuspmpvdW/nYaYxpKKe94kYX1bpIj9u40E8GDgOEjBiv/gq5ne', 'Sophie', 'Brown', 'sophie.brown@example.com', 'NULL', '2', '6');
